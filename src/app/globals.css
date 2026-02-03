@@ -3,9 +3,8 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-}
-
-@theme inline {
+  /* Map any additional design tokens here using standard CSS variables
+     so the linter does not complain about unknown at-rules. */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -23,4 +22,93 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Animated "dancing" lime background utility */
+.lime-dancing-bg {
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(circle at 0% 0%, #bef264 0, transparent 55%),
+    radial-gradient(circle at 100% 0%, #84cc16 0, transparent 55%),
+    radial-gradient(circle at 0% 100%, #4ade80 0, transparent 55%),
+    radial-gradient(circle at 100% 100%, #22c55e 0, transparent 55%),
+    radial-gradient(circle at 50% 50%, #a3e635 0, transparent 60%);
+  background-size: 200% 200%;
+  animation: lime-dance 18s ease-in-out infinite alternate;
+}
+
+@keyframes lime-dance {
+  0% {
+    background-position: 0% 0%, 100% 0%, 0% 100%, 100% 100%, 50% 50%;
+  }
+  50% {
+    background-position: 30% 10%, 70% 0%, 10% 80%, 80% 90%, 40% 60%;
+  }
+  100% {
+    background-position: 100% 0%, 0% 0%, 100% 100%, 0% 100%, 60% 40%;
+  }
+}
+
+/* Subtle animated background for admin dashboard / home (lime motion pastel) */
+.admin-animated-bg {
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(circle at 0% 0%, #ecfccb 0, transparent 55%),
+    radial-gradient(circle at 100% 0%, #d9f99d 0, transparent 55%),
+    radial-gradient(circle at 0% 100%, #bbf7d0 0, transparent 55%),
+    radial-gradient(circle at 100% 100%, #bef264 0, transparent 55%);
+  background-size: 220% 220%;
+  animation: admin-bg-flow 30s ease-in-out infinite alternate;
+}
+
+@keyframes admin-bg-flow {
+  0% {
+    background-position: 0% 0%, 100% 0%, 0% 100%, 100% 100%;
+  }
+  50% {
+    background-position: 30% 20%, 80% 0%, 10% 80%, 70% 100%;
+  }
+  100% {
+    background-position: 100% 0%, 0% 0%, 100% 100%, 0% 100%;
+  }
+}
+
+/* Logo animations */
+@keyframes logo-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes logo-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes title-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.logo-animate {
+  animation: logo-fade-in 0.8s ease-out, logo-float 3s ease-in-out infinite 0.8s;
+}
+
+.title-animate {
+  animation: title-fade-in 0.8s ease-out 0.3s both;
 }
