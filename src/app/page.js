@@ -110,7 +110,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen admin-animated-bg">
+    <div className="min-h-screen bg-lime-50">
       <div className="w-full px-4 sm:px-6 lg:px-8 py-6 flex gap-6 min-h-screen">
         {/* Sidebar */}
         <aside className="hidden md:flex md:flex-col h-full w-64 rounded-2xl bg-white shadow-md border border-slate-100 px-4 py-6">
