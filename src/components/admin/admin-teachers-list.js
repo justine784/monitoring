@@ -76,6 +76,7 @@ export default function AdminTeachersList() {
             name: t.name || t.schoolId,
             role: t.role || 'teacher',
             department: t.department || '',
+            position: t.position || '',
             timeIn,
             timeOut,
             status,
@@ -115,6 +116,7 @@ export default function AdminTeachersList() {
                   <th className="py-2 pr-4">Name</th>
                   <th className="py-2 pr-4">Role</th>
                   <th className="py-2 pr-4">Department</th>
+                  <th className="py-2 pr-4">Position</th>
                   <th className="py-2 pr-4">Time In</th>
                   <th className="py-2 pr-4">Time Out</th>
                   <th className="py-2 pr-4">Status</th>
@@ -127,6 +129,9 @@ export default function AdminTeachersList() {
                     <td className="py-2 pr-4 text-slate-600 capitalize">{t.role}</td>
                     <td className="py-2 pr-4 text-slate-600">
                       {t.department && t.department.trim().length > 0 ? t.department : '-'}
+                    </td>
+                    <td className="py-2 pr-4 text-slate-600">
+                      {t.position && t.position.trim().length > 0 ? t.position : '-'}
                     </td>
                     <td className="py-2 pr-4">{t.timeIn}</td>
                     <td className="py-2 pr-4">{t.timeOut}</td>

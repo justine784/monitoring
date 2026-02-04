@@ -28,9 +28,8 @@ export default function AdminDashboard() {
   const [adminTheme, setAdminTheme] = useState('light');
   const [stats, setStats] = useState({
     totalTeachers: 0,
-    presentToday: 0,
+    totalEmployees: 0,
     avgHours: 0,
-    facultyRooms: 0,
   });
   const [statsLoading, setStatsLoading] = useState(true);
 
@@ -66,7 +65,9 @@ export default function AdminDashboard() {
           ...d.data(),
         }));
         const teachers = allTeachers.filter((t) => t.role === 'teacher');
+        const employees = allTeachers.filter((t) => t.role !== 'teacher');
         const totalTeachers = teachers.length;
+        const totalEmployees = employees.length;
 
         // Load today's DTR records
         const dtrSnap = await getDocs(
@@ -74,13 +75,6 @@ export default function AdminDashboard() {
         );
         const dtrRecords = dtrSnap.docs.map((d) => d.data());
         
-        // Count present teachers (those with firstIn today)
-        const presentToday = dtrRecords.filter((rec) => {
-          // Check if this DTR belongs to a teacher
-          const teacher = teachers.find((t) => t.schoolId === rec.teacherId);
-          return teacher && rec.firstIn;
-        }).length;
-
         // Calculate average hours
         let totalHours = 0;
         let hoursCount = 0;
@@ -98,39 +92,10 @@ export default function AdminDashboard() {
         });
         const avgHours = hoursCount > 0 ? totalHours / hoursCount : 0;
 
-        // Load teacher locations for today
-        const todayStart = new Date();
-        todayStart.setHours(0, 0, 0, 0);
-        const todayEnd = new Date();
-        todayEnd.setHours(23, 59, 59, 999);
-        
-        const locationsSnap = await getDocs(collection(firebaseDb, 'teacherLocations'));
-        const allLocations = locationsSnap.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        }));
-        
-        // Filter locations created today and get unique locations
-        const todayLocations = allLocations.filter((loc) => {
-          if (!loc.createdAt) return false;
-          const createdAt = loc.createdAt.seconds 
-            ? new Date(loc.createdAt.seconds * 1000)
-            : new Date(loc.createdAt);
-          return createdAt >= todayStart && createdAt <= todayEnd;
-        });
-        
-        const uniqueRooms = new Set(
-          todayLocations
-            .map((loc) => loc.location)
-            .filter((room) => room && room.trim().length > 0)
-        );
-        const facultyRooms = uniqueRooms.size;
-
         setStats({
           totalTeachers,
-          presentToday,
+          totalEmployees,
           avgHours: Math.round(avgHours * 10) / 10, // Round to 1 decimal place
-          facultyRooms,
         });
       } catch (err) {
         console.error('Failed to load stats', err);
@@ -224,7 +189,7 @@ export default function AdminDashboard() {
       {/* Main Content */}
       <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <Card
             className={
               isDark
@@ -256,19 +221,15 @@ export default function AdminDashboard() {
           >
             <CardHeader className="pb-2">
               <CardTitle className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                Present Today
+                Total Employees
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-green-600">
-                {statsLoading ? '...' : stats.presentToday}
+                {statsLoading ? '...' : stats.totalEmployees}
               </div>
               <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                {statsLoading
-                  ? 'Loading...'
-                  : stats.totalTeachers > 0
-                    ? `${Math.round((stats.presentToday / stats.totalTeachers) * 100)}% attendance`
-                    : 'No teachers'}
+                Registered employees
               </p>
             </CardContent>
           </Card>
@@ -295,27 +256,6 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card
-            className={
-              isDark
-                ? 'shadow-md border-slate-800 bg-slate-900'
-                : 'shadow-md shadow-purple-100 border-purple-100 bg-white/90'
-            }
-          >
-            <CardHeader className="pb-2">
-              <CardTitle className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                Faculty Rooms
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-purple-600">
-                {statsLoading ? '...' : stats.facultyRooms}
-              </div>
-              <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                Unique locations today
-              </p>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Teachers & Employees management */}

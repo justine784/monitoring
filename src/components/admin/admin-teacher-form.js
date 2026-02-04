@@ -7,10 +7,22 @@ import { firebaseDb, firebaseStorage } from '@/lib/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
+function normalizeSchoolId(raw) {
+  const trimmed = String(raw || '').trim();
+  if (!trimmed) return '';
+  return trimmed.toUpperCase().startsWith('MBC-') ? trimmed : `MBC-${trimmed}`;
+}
+
+function stripMbcPrefix(raw) {
+  const trimmed = String(raw || '').trim();
+  return trimmed.toUpperCase().startsWith('MBC-') ? trimmed.slice(4) : trimmed;
+}
+
 export default function AdminTeacherForm() {
   const [name, setName] = useState('');
   const [schoolId, setSchoolId] = useState('');
-  const [facultyRoom, setFacultyRoom] = useState('');
+  const [position, setPosition] = useState('');
+  const [employmentType, setEmploymentType] = useState('');
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [loading, setLoading] = useState(false);
@@ -35,7 +47,8 @@ export default function AdminTeacherForm() {
     setError('');
     setMessage('');
 
-    if (!name.trim() || !schoolId.trim()) {
+    const normalizedSchoolId = normalizeSchoolId(schoolId);
+    if (!name.trim() || !normalizedSchoolId) {
       setError('Name and School ID are required.');
       return;
     }
@@ -52,7 +65,7 @@ export default function AdminTeacherForm() {
             : file.type === 'image/jpeg'
               ? 'jpg'
               : 'jpg';
-        const storagePath = `teacherProfiles/${schoolId}.${ext}`;
+        const storagePath = `teacherProfiles/${normalizedSchoolId}.${ext}`;
         const storageRef = ref(firebaseStorage, storagePath);
         await uploadBytes(storageRef, file);
         photoURL = await getDownloadURL(storageRef);
@@ -60,13 +73,14 @@ export default function AdminTeacherForm() {
       }
 
       const teachersCol = collection(firebaseDb, 'teachers');
-      const teacherDoc = doc(teachersCol, schoolId);
+      const teacherDoc = doc(teachersCol, normalizedSchoolId);
 
       await setDoc(teacherDoc, {
         name: name.trim(),
-        schoolId: schoolId.trim(),
+        schoolId: normalizedSchoolId,
         role: 'teacher',
-        facultyRoom: facultyRoom.trim() || null,
+        position: position.trim() || null,
+        employmentType: employmentType.trim() || null,
         photoURL,
         photoPath,
         createdAt: serverTimestamp(),
@@ -76,7 +90,8 @@ export default function AdminTeacherForm() {
       setMessage('Teacher saved successfully.');
       setName('');
       setSchoolId('');
-      setFacultyRoom('');
+      setPosition('');
+      setEmploymentType('');
       setFile(null);
       setPreviewUrl('');
     } catch (err) {
@@ -110,24 +125,45 @@ export default function AdminTeacherForm() {
 
             <div className="space-y-1">
               <label className="block text-xs font-medium text-slate-700">School ID</label>
+              <div className="flex items-center">
+                <span className="px-3 py-2 border border-r-0 border-slate-300 rounded-l-md text-sm bg-slate-50 text-slate-700 font-mono select-none">
+                  MBC-
+                </span>
+                <input
+                  type="text"
+                  value={stripMbcPrefix(schoolId)}
+                  onChange={(e) => setSchoolId(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-r-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent font-mono"
+                  placeholder="e.g. 0001"
+                />
+              </div>
+              <p className="text-[11px] text-slate-500">Saved as {normalizeSchoolId(stripMbcPrefix(schoolId) || '...')}</p>
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-slate-700">Position</label>
               <input
                 type="text"
-                value={schoolId}
-                onChange={(e) => setSchoolId(e.target.value)}
+                value={position}
+                onChange={(e) => setPosition(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
-                placeholder="e.g. T-001"
+                placeholder="e.g. Instructor I, Professor, Staff"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="block text-xs font-medium text-slate-700">Faculty Room</label>
-              <input
-                type="text"
-                value={facultyRoom}
-                onChange={(e) => setFacultyRoom(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
-                placeholder="e.g. Room 101, Faculty Office A"
-              />
+              <label className="block text-xs font-medium text-slate-700">Employment Type</label>
+              <select
+                value={employmentType}
+                onChange={(e) => setEmploymentType(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent bg-white"
+              >
+                <option value="">Select employment type</option>
+                <option value="Permanent">Permanent</option>
+                <option value="Temporary">Temporary</option>
+                <option value="Contract of service (COS) - full time">Contract of service (COS) - full time</option>
+                <option value="Contract of service (COS) - part time">Contract of service (COS) - part time</option>
+              </select>
             </div>
 
             <Button type="submit" className="mt-1 bg-lime-600 hover:bg-lime-700" disabled={loading}>

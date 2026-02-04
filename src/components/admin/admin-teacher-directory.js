@@ -10,7 +10,7 @@ export default function AdminTeacherDirectory() {
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({ name: '', schoolId: '', facultyRoom: '' });
+  const [editForm, setEditForm] = useState({ name: '', schoolId: '', position: '', employmentType: '' });
   const [savingId, setSavingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [search, setSearch] = useState('');
@@ -36,13 +36,14 @@ export default function AdminTeacherDirectory() {
     setEditForm({
       name: teacher.name || '',
       schoolId: teacher.schoolId || '',
-      facultyRoom: teacher.facultyRoom || '',
+      position: teacher.position || '',
+      employmentType: teacher.employmentType || '',
     });
   };
 
   const cancelEdit = () => {
     setEditingId(null);
-    setEditForm({ name: '', schoolId: '', facultyRoom: '' });
+    setEditForm({ name: '', schoolId: '', position: '', employmentType: '' });
   };
 
   const saveEdit = async (id) => {
@@ -55,7 +56,8 @@ export default function AdminTeacherDirectory() {
       const updateData = {
         name: editForm.name.trim(),
         schoolId: editForm.schoolId.trim(),
-        facultyRoom: editForm.facultyRoom.trim() || null,
+        position: editForm.position.trim() || null,
+        employmentType: editForm.employmentType.trim() || null,
         updatedAt: serverTimestamp(),
       };
       await updateDoc(ref, updateData);
@@ -99,7 +101,7 @@ export default function AdminTeacherDirectory() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name, ID, or faculty room..."
+            placeholder="Search by name, ID, role, position, or employment type..."
             className="w-full max-w-sm px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
           />
         </div>
@@ -117,8 +119,17 @@ export default function AdminTeacherDirectory() {
                   (t.name && t.name.toLowerCase().includes(term)) ||
                   (t.schoolId && String(t.schoolId).toLowerCase().includes(term)) ||
                   (t.role && t.role.toLowerCase().includes(term)) ||
-                  (t.facultyRoom && t.facultyRoom.toLowerCase().includes(term))
+                  (t.position && t.position.toLowerCase().includes(term)) ||
+                  (t.employmentType && t.employmentType.toLowerCase().includes(term))
                 );
+              })
+              .sort((a, b) => {
+                const an = (a.name || '').trim();
+                const bn = (b.name || '').trim();
+                if (!an && !bn) return 0;
+                if (!an) return 1;
+                if (!bn) return -1;
+                return an.localeCompare(bn, undefined, { sensitivity: 'base' });
               })
               .map((t) => (
               <div
@@ -162,13 +173,26 @@ export default function AdminTeacherDirectory() {
                         />
                         <input
                           type="text"
-                          value={editForm.facultyRoom}
+                          value={editForm.position}
                           onChange={(e) =>
-                            setEditForm((prev) => ({ ...prev, facultyRoom: e.target.value }))
+                            setEditForm((prev) => ({ ...prev, position: e.target.value }))
                           }
                           className="w-full px-2 py-1 border border-slate-300 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-lime-500 focus:border-transparent"
-                          placeholder="Faculty Room (optional)"
+                          placeholder="Position (optional)"
                         />
+                        <select
+                          value={editForm.employmentType}
+                          onChange={(e) =>
+                            setEditForm((prev) => ({ ...prev, employmentType: e.target.value }))
+                          }
+                          className="w-full px-2 py-1 border border-slate-300 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-lime-500 focus:border-transparent bg-white"
+                        >
+                          <option value="">Employment type (optional)</option>
+                          <option value="Permanent">Permanent</option>
+                          <option value="Temporary">Temporary</option>
+                          <option value="Contract of service (COS) - full time">Contract of service (COS) - full time</option>
+                          <option value="Contract of service (COS) - part time">Contract of service (COS) - part time</option>
+                        </select>
                       </div>
                     ) : (
                       <>
@@ -179,9 +203,14 @@ export default function AdminTeacherDirectory() {
                         <p className="text-xs text-slate-500 capitalize">
                           {t.role}
                         </p>
-                        {t.facultyRoom && (
-                          <p className="text-xs text-blue-600 mt-1 font-medium">
-                            🏢 {t.facultyRoom}
+                        {t.position && (
+                          <p className="text-xs text-slate-600 mt-1 font-medium">
+                            {t.position}
+                          </p>
+                        )}
+                        {t.employmentType && (
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            {t.employmentType}
                           </p>
                         )}
                       </>

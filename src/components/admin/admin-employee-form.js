@@ -7,6 +7,17 @@ import { firebaseDb, firebaseStorage } from '@/lib/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
+function normalizeEmployeeId(raw) {
+  const trimmed = String(raw || '').trim();
+  if (!trimmed) return '';
+  return trimmed.toUpperCase().startsWith('MBC-') ? trimmed : `MBC-${trimmed}`;
+}
+
+function stripMbcPrefix(raw) {
+  const trimmed = String(raw || '').trim();
+  return trimmed.toUpperCase().startsWith('MBC-') ? trimmed.slice(4) : trimmed;
+}
+
 export default function AdminEmployeeForm() {
   const [name, setName] = useState('');
   const [employeeId, setEmployeeId] = useState('');
@@ -36,7 +47,8 @@ export default function AdminEmployeeForm() {
     setError('');
     setMessage('');
 
-    if (!name.trim() || !employeeId.trim() || !department.trim()) {
+    const normalizedEmployeeId = normalizeEmployeeId(employeeId);
+    if (!name.trim() || !normalizedEmployeeId || !department.trim()) {
       setError('Name, Employee ID, and Department are required.');
       return;
     }
@@ -53,7 +65,7 @@ export default function AdminEmployeeForm() {
             : file.type === 'image/jpeg'
               ? 'jpg'
               : 'jpg';
-        const storagePath = `employeeProfiles/${employeeId}.${ext}`;
+        const storagePath = `employeeProfiles/${normalizedEmployeeId}.${ext}`;
         const storageRef = ref(firebaseStorage, storagePath);
         await uploadBytes(storageRef, file);
         photoURL = await getDownloadURL(storageRef);
@@ -61,11 +73,11 @@ export default function AdminEmployeeForm() {
       }
 
       const teachersCol = collection(firebaseDb, 'teachers');
-      const empDoc = doc(teachersCol, employeeId);
+      const empDoc = doc(teachersCol, normalizedEmployeeId);
 
       await setDoc(empDoc, {
         name: name.trim(),
-        schoolId: employeeId.trim(),
+        schoolId: normalizedEmployeeId,
         role: role || 'employee',
         department: department.trim(),
         photoURL,
@@ -115,13 +127,19 @@ export default function AdminEmployeeForm() {
 
             <div className="space-y-1">
               <label className="block text-xs font-medium text-slate-700">Employee ID</label>
-              <input
-                type="text"
-                value={employeeId}
-                onChange={(e) => setEmployeeId(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
-                placeholder="e.g. E-001"
-              />
+              <div className="flex items-center">
+                <span className="px-3 py-2 border border-r-0 border-slate-300 rounded-l-md text-sm bg-slate-50 text-slate-700 font-mono select-none">
+                  MBC-
+                </span>
+                <input
+                  type="text"
+                  value={stripMbcPrefix(employeeId)}
+                  onChange={(e) => setEmployeeId(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-r-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent font-mono"
+                  placeholder="e.g. 0001"
+                />
+              </div>
+              <p className="text-[11px] text-slate-500">Saved as {normalizeEmployeeId(stripMbcPrefix(employeeId) || '...')}</p>
             </div>
 
             <div className="space-y-1">

@@ -41,7 +41,7 @@ export default function Home() {
             (item.name && item.name.toLowerCase().includes(term)) ||
             (item.schoolId && String(item.schoolId).toLowerCase().includes(term)) ||
             (item.role && item.role.toLowerCase().includes(term)) ||
-            (item.facultyRoom && item.facultyRoom.toLowerCase().includes(term))
+            (item.position && item.position.toLowerCase().includes(term))
           );
         });
 
@@ -238,7 +238,7 @@ export default function Home() {
                 </div>
                 <input
                   type="text"
-                  placeholder="Search teachers, employees, faculty rooms, or records..."
+                  placeholder="Search teachers, employees, positions, or records..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
@@ -302,9 +302,9 @@ export default function Home() {
                               <p className="text-xs text-slate-500 capitalize">
                                 {item.role}
                               </p>
-                              {item.facultyRoom && (
-                                <p className="text-xs text-blue-600 mt-1">
-                                  🏢 {item.facultyRoom}
+                              {item.position && (
+                                <p className="text-xs text-slate-600 mt-1">
+                                  {item.position}
                                 </p>
                               )}
                             </div>
@@ -341,7 +341,7 @@ export default function Home() {
                   </div>
                   <input
                     type="text"
-                    placeholder="Search teachers by name, ID, or faculty room..."
+                    placeholder="Search teachers by name, ID, or position..."
                     value={teacherSearchQuery}
                     onChange={(e) => setTeacherSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
@@ -370,7 +370,7 @@ export default function Home() {
                       return (
                         (teacher.name && teacher.name.toLowerCase().includes(term)) ||
                         (teacher.schoolId && String(teacher.schoolId).toLowerCase().includes(term)) ||
-                        (teacher.facultyRoom && teacher.facultyRoom.toLowerCase().includes(term))
+                        (teacher.position && teacher.position.toLowerCase().includes(term))
                       );
                     });
 
@@ -406,9 +406,9 @@ export default function Home() {
                                   <p className="text-xs text-slate-600 mt-1">
                                     ID: <span className="font-mono">{teacher.schoolId}</span>
                                   </p>
-                                  {teacher.facultyRoom && (
-                                    <p className="text-xs text-blue-600 mt-1 font-medium">
-                                      🏢 {teacher.facultyRoom}
+                                  {teacher.position && (
+                                    <p className="text-xs text-slate-600 mt-1 font-medium">
+                                      {teacher.position}
                                     </p>
                                   )}
                                 </div>

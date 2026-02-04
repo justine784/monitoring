@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 // Simple static log entries for now; you can wire this to real data later
 const MOCK_ACTIVITY = [
   { id: 1, time: '08:15', user: 'John Doe', action: 'Clocked in', details: 'Room 201' },
-  { id: 2, time: '09:05', user: 'Jane Smith', action: 'Entered faculty room', details: 'Faculty Room A' },
+  { id: 2, time: '09:05', user: 'Jane Smith', action: 'Entered office', details: 'Room 101' },
   { id: 3, time: '12:30', user: 'John Doe', action: 'Clocked out', details: 'Room 201' },
 ];
 
