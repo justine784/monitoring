@@ -3,10 +3,26 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { firebaseAuth, firebaseDb } from '@/lib/firebase';
-import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
+import {
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  sendPasswordResetEmail,
+} from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 const AuthContext = createContext(null);
+
+// Keep school ID normalization consistent across the app.
+// We store documents in Firestore using an uppercase `MBC-XXXX` format,
+// but users might type `mbc-0001` or just `0001` when logging in.
+function normalizeSchoolId(raw) {
+  const trimmed = String(raw || '').trim();
+  if (!trimmed) return '';
+
+  const upper = trimmed.toUpperCase();
+  return upper.startsWith('MBC-') ? upper : `MBC-${upper}`;
+}
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -62,36 +78,41 @@ export function AuthProvider({ children }) {
 
   // Auto-detect role based on school ID
   const loginWithAutoDetect = async ({ schoolId }) => {
-    if (!schoolId) {
+    const trimmedId = String(schoolId || '').trim();
+    if (!trimmedId) {
       throw new Error('School ID is required');
     }
 
-    // First, check the teachers collection to determine role
-    const teacherRef = doc(firebaseDb, 'teachers', schoolId);
+    // Normalize to our canonical Firestore ID format (e.g. MBC-0001),
+    // so login works even if the user types different casing like mbc-0001.
+    const normalizedId = normalizeSchoolId(trimmedId);
+
+    // First, check the teachers collection – this is the source of truth.
+    const teacherRef = doc(firebaseDb, 'teachers', normalizedId);
     const teacherSnap = await getDoc(teacherRef);
     
-    let detectedRole = 'employee'; // Default to employee
-    let name = 'Employee';
-    
-    if (teacherSnap.exists()) {
-      const teacherData = teacherSnap.data();
-      // If role is 'teacher', it's a teacher, otherwise it's an employee
-      detectedRole = teacherData.role === 'teacher' ? 'teacher' : 'employee';
-      name = teacherData.name || (detectedRole === 'teacher' ? 'Teacher' : 'Employee');
-    } else {
-      // Check users collection for existing profile
-      const userRef = doc(firebaseDb, 'users', schoolId);
-      const userSnap = await getDoc(userRef);
-      
-      if (userSnap.exists()) {
-        const userData = userSnap.data();
-        detectedRole = userData.role === 'teacher' ? 'teacher' : 'employee';
-        name = userData.name || (detectedRole === 'teacher' ? 'Teacher' : 'Employee');
-      }
+    // If there is no record in teachers, login is not allowed.
+    if (!teacherSnap.exists()) {
+      throw new Error(
+        'School ID not found. Please contact the admin to add you to the system.'
+      );
     }
 
-    // Now use the detected role to login
-    return loginTeacherOrEmployee({ schoolId, role: detectedRole });
+    const teacherData = teacherSnap.data();
+
+    // Decide role based strictly on what admin set in the teachers collection.
+    // Only explicit 'teacher' or 'employee' roles are allowed to log in.
+    const rawRole = String(teacherData.role || '').toLowerCase();
+    if (rawRole !== 'teacher' && rawRole !== 'employee') {
+      throw new Error(
+        'Your account role is not allowed to log in. Please contact the admin.'
+      );
+    }
+
+    const detectedRole = rawRole === 'teacher' ? 'teacher' : 'employee';
+
+    // Now use the detected role to login, always passing the normalized ID.
+    return loginTeacherOrEmployee({ schoolId: normalizedId, role: detectedRole });
   };
 
   const loginTeacherOrEmployee = async ({ schoolId, role }) => {
@@ -99,16 +120,28 @@ export function AuthProvider({ children }) {
       throw new Error('School ID is required');
     }
 
+    // Ensure we always talk to Firestore using the normalized ID.
+    const normalizedId = normalizeSchoolId(schoolId);
+
+    // Extra safety: only allow login if this ID exists in the teachers collection.
+    const teacherRefForCheck = doc(firebaseDb, 'teachers', normalizedId);
+    const teacherSnapForCheck = await getDoc(teacherRefForCheck);
+    if (!teacherSnapForCheck.exists()) {
+      throw new Error(
+        'School ID not found. Please contact the admin to add you to the system.'
+      );
+    }
+
     // This uses documents like: users/{schoolId} with fields { role, name, schoolId }.
     // If it does not exist yet, we create it automatically.
-    const userRef = doc(firebaseDb, 'users', schoolId);
+    const userRef = doc(firebaseDb, 'users', normalizedId);
     const snap = await getDoc(userRef);
 
     // Helper: try to read name from teachers collection when logging in as teacher
     const getTeacherName = async () => {
       try {
         if (role !== 'teacher') return null;
-        const teacherRef = doc(firebaseDb, 'teachers', schoolId);
+        const teacherRef = doc(firebaseDb, 'teachers', normalizedId);
         const teacherSnap = await getDoc(teacherRef);
         if (teacherSnap.exists()) {
           const teacherData = teacherSnap.data();
@@ -132,12 +165,12 @@ export function AuthProvider({ children }) {
       const defaultProfile = {
         name,
         role,
-        schoolId,
+        schoolId: normalizedId,
       };
       await setDoc(userRef, defaultProfile);
       
       const newUser = {
-        uid: schoolId,
+        uid: normalizedId,
         ...defaultProfile,
       };
 
@@ -178,9 +211,9 @@ export function AuthProvider({ children }) {
     }
 
     const newUser = {
-      uid: schoolId,
+      uid: normalizedId,
       name: data.name || (role === 'teacher' ? 'Teacher' : 'Employee'),
-      schoolId,
+      schoolId: normalizedId,
       role: data.role,
     };
 
@@ -212,8 +245,27 @@ export function AuthProvider({ children }) {
     router.push('/login');
   };
 
+  const sendPasswordReset = async (email) => {
+    const targetEmail = email || (user && user.email);
+    if (!targetEmail) {
+      throw new Error('Email is required to send a password reset link.');
+    }
+    await sendPasswordResetEmail(firebaseAuth, targetEmail);
+    return true;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, initialising, loginTeacherOrEmployee, loginWithAutoDetect, loginAdmin, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        initialising,
+        loginTeacherOrEmployee,
+        loginWithAutoDetect,
+        loginAdmin,
+        logout,
+        sendPasswordReset,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

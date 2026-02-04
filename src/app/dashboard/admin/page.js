@@ -23,7 +23,7 @@ function getTodayKey() {
 }
 
 export default function AdminDashboard() {
-  const { user, logout, initialising } = useAuth();
+  const { user, logout, initialising, sendPasswordReset } = useAuth();
   const router = useRouter();
   const [adminTheme, setAdminTheme] = useState('light');
   const [stats, setStats] = useState({
@@ -32,6 +32,8 @@ export default function AdminDashboard() {
     avgHours: 0,
   });
   const [statsLoading, setStatsLoading] = useState(true);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetStatus, setResetStatus] = useState({ type: '', message: '' });
 
   useEffect(() => {
     if (initialising) return;
@@ -137,6 +139,31 @@ export default function AdminDashboard() {
 
   const isDark = adminTheme === 'dark';
 
+  // Keep reset email in sync with current admin email (if any)
+  useEffect(() => {
+    if (user?.email) {
+      setResetEmail(user.email);
+    }
+  }, [user]);
+
+  const handleSendReset = async (e) => {
+    e.preventDefault();
+    setResetStatus({ type: '', message: '' });
+    try {
+      await sendPasswordReset(resetEmail);
+      setResetStatus({
+        type: 'success',
+        message: 'Password reset link sent. Please check your email inbox (and spam folder).',
+      });
+    } catch (err) {
+      console.error('Failed to send password reset email', err);
+      setResetStatus({
+        type: 'error',
+        message: err?.message || 'Failed to send password reset email.',
+      });
+    }
+  };
+
   return (
     <div
       className={
@@ -158,9 +185,18 @@ export default function AdminDashboard() {
       <header className="relative bg-white/80 border-b shadow-sm backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900">Admin Dashboard</h1>
-              <p className="text-sm text-slate-600 mt-1">Monitor teachers and system activity</p>
+            <div className="flex items-center gap-3">
+              <img
+                src="/logo.jpg"
+                alt="School logo"
+                className="h-10 w-10 rounded-full border border-slate-200 object-cover shadow-sm"
+              />
+              <div>
+                <h1 className="text-2xl font-bold text-slate-900">Mindoro State University</h1>
+                <p className="text-sm text-slate-600 mt-1">
+                  Monitor teachers and Employees
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-3">
               <Button
@@ -188,6 +224,85 @@ export default function AdminDashboard() {
 
       {/* Main Content */}
       <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {/* Account & design settings quick access */}
+        <div className="grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-4">
+          <Card
+            className={
+              isDark
+                ? 'shadow-md border-slate-800 bg-slate-900'
+                : 'shadow-md border-slate-100 bg-white/90'
+            }
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className={`text-sm font-medium ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+                Admin Account Security
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <p className={isDark ? 'text-xs text-slate-400' : 'text-xs text-slate-500'}>
+                Send yourself a password reset link via email. This uses your admin account on
+                Gmail or any email you registered with Firebase Auth.
+              </p>
+              <form onSubmit={handleSendReset} className="space-y-2 max-w-md">
+                <label className="block text-xs font-medium text-slate-700">
+                  Admin email
+                </label>
+                <input
+                  type="email"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                  placeholder="your-admin@gmail.com"
+                  required
+                />
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="mt-1 bg-lime-600 hover:bg-lime-700"
+                >
+                  Send password reset link
+                </Button>
+                {resetStatus.message && (
+                  <p
+                    className={`text-xs mt-2 ${
+                      resetStatus.type === 'success' ? 'text-green-600' : 'text-red-600'
+                    }`}
+                  >
+                    {resetStatus.message}
+                  </p>
+                )}
+              </form>
+            </CardContent>
+          </Card>
+
+          <Card
+            className={
+              isDark
+                ? 'shadow-md border-slate-800 bg-slate-900'
+                : 'shadow-md border-slate-100 bg-white/90'
+            }
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className={`text-sm font-medium ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+                Design Settings
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <p className={isDark ? 'text-xs text-slate-400' : 'text-xs text-slate-500'}>
+                Adjust colors and layout of teacher/employee dashboards.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+                onClick={() => router.push('/settings')}
+              >
+                Open design settings
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <Card

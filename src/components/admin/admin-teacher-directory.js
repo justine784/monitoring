@@ -14,6 +14,7 @@ export default function AdminTeacherDirectory() {
   const [savingId, setSavingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
 
   useEffect(() => {
     const loadTeachers = async () => {
@@ -96,14 +97,27 @@ export default function AdminTeacherDirectory() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="mb-3">
+        <div className="mb-3 flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name, ID, role, position, or employment type..."
-            className="w-full max-w-sm px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+            className="w-full sm:max-w-sm px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
           />
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-slate-600">Filter role:</span>
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="px-2 py-1 border border-slate-300 rounded-md text-xs bg-white focus:outline-none focus:ring-1 focus:ring-lime-500 focus:border-transparent"
+            >
+              <option value="all">All</option>
+              <option value="teacher">Teacher</option>
+              <option value="employee">Employee</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
         </div>
         {loading ? (
           <p className="text-xs text-slate-500">Loading teachers...</p>
@@ -113,15 +127,23 @@ export default function AdminTeacherDirectory() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {teachers
               .filter((t) => {
-                if (!search.trim()) return true;
-                const term = search.toLowerCase();
-                return (
-                  (t.name && t.name.toLowerCase().includes(term)) ||
-                  (t.schoolId && String(t.schoolId).toLowerCase().includes(term)) ||
-                  (t.role && t.role.toLowerCase().includes(term)) ||
-                  (t.position && t.position.toLowerCase().includes(term)) ||
-                  (t.employmentType && t.employmentType.toLowerCase().includes(term))
-                );
+                const matchesSearch = (() => {
+                  if (!search.trim()) return true;
+                  const term = search.toLowerCase();
+                  return (
+                    (t.name && t.name.toLowerCase().includes(term)) ||
+                    (t.schoolId && String(t.schoolId).toLowerCase().includes(term)) ||
+                    (t.role && t.role.toLowerCase().includes(term)) ||
+                    (t.position && t.position.toLowerCase().includes(term)) ||
+                    (t.employmentType && t.employmentType.toLowerCase().includes(term))
+                  );
+                })();
+
+                const role = (t.role || '').toLowerCase();
+                const matchesRole =
+                  roleFilter === 'all' ? true : role === roleFilter.toLowerCase();
+
+                return matchesSearch && matchesRole;
               })
               .sort((a, b) => {
                 const an = (a.name || '').trim();

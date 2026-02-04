@@ -21,8 +21,8 @@ function stripMbcPrefix(raw) {
 export default function AdminEmployeeForm() {
   const [name, setName] = useState('');
   const [employeeId, setEmployeeId] = useState('');
-  const [department, setDepartment] = useState('');
-  const [role, setRole] = useState('employee');
+  const [employmentType, setEmploymentType] = useState('');
+  const [position, setPosition] = useState('');
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [loading, setLoading] = useState(false);
@@ -48,8 +48,8 @@ export default function AdminEmployeeForm() {
     setMessage('');
 
     const normalizedEmployeeId = normalizeEmployeeId(employeeId);
-    if (!name.trim() || !normalizedEmployeeId || !department.trim()) {
-      setError('Name, Employee ID, and Department are required.');
+    if (!name.trim() || !normalizedEmployeeId || !employmentType.trim()) {
+      setError('Name, Employee ID, and Employment Type are required.');
       return;
     }
 
@@ -78,8 +78,10 @@ export default function AdminEmployeeForm() {
       await setDoc(empDoc, {
         name: name.trim(),
         schoolId: normalizedEmployeeId,
-        role: role || 'employee',
-        department: department.trim(),
+        // Employees are always saved with role "employee"
+        role: 'employee',
+        position: position.trim() || null,
+        employmentType: employmentType.trim(),
         photoURL,
         photoPath,
         createdAt: serverTimestamp(),
@@ -89,8 +91,8 @@ export default function AdminEmployeeForm() {
       setMessage('Employee saved successfully.');
       setName('');
       setEmployeeId('');
-      setDepartment('');
-      setRole('employee');
+      setEmploymentType('');
+      setPosition('');
       setFile(null);
       setPreviewUrl('');
     } catch (err) {
@@ -143,28 +145,35 @@ export default function AdminEmployeeForm() {
             </div>
 
             <div className="space-y-1">
-              <label className="block text-xs font-medium text-slate-700">Department</label>
-              <input
-                type="text"
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
-                placeholder="e.g. Registrar, Finance"
-              />
+              <label className="block text-xs font-medium text-slate-700">Employment Type</label>
+              <select
+                value={employmentType}
+                onChange={(e) => setEmploymentType(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent bg-white"
+              >
+                <option value="">Select employment type</option>
+                <option value="JOB ORDER - Office">JOB ORDER - Office</option>
+                <option value="JOB ORDER - Field">JOB ORDER - Field</option>
+                <option value="PERMANENT">PERMANENT</option>
+                <option value="CASUAL">CASUAL</option>
+                <option value="CONTRACT OF SERVICE (COS) - Full Time">
+                  CONTRACT OF SERVICE (COS) - Full Time
+                </option>
+                <option value="CONTRACT OF SERVICE (COS) - Part Time">
+                  CONTRACT OF SERVICE (COS) - Part Time
+                </option>
+              </select>
             </div>
 
             <div className="space-y-1">
-              <label className="block text-xs font-medium text-slate-700">Role</label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent bg-white"
-              >
-                <option value="employee">Employee</option>
-                <option value="student">Student</option>
-                <option value="parent">Parent</option>
-                <option value="other">Other</option>
-              </select>
+              <label className="block text-xs font-medium text-slate-700">Position (optional)</label>
+              <input
+                type="text"
+                value={position}
+                onChange={(e) => setPosition(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                placeholder="e.g. Clerk, Staff, Officer"
+              />
             </div>
 
             <Button
