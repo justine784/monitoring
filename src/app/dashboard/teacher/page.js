@@ -134,7 +134,7 @@ export default function TeacherDashboard() {
                   <DropdownMenuTrigger asChild>
                     <button
                       type="button"
-                      className="group flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-sm hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl"
+                      className="group flex items-center gap-2 sm:gap-3 rounded-full border border-white/20 bg-white/10 px-3 sm:px-4 py-2 backdrop-blur-sm hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl"
                     >
                       <div className="relative">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-r from-lime-400 to-emerald-500 flex items-center justify-center text-white text-sm font-bold shadow-lg ring-2 ring-white/30 group-hover:ring-4 group-hover:ring-white/50 transition-all">
@@ -151,7 +151,7 @@ export default function TeacherDashboard() {
                           {user.schoolId}
                         </span>
                       </div>
-                      <ChevronDown className="hidden sm:block w-4 h-4 text-blue-200 group-hover:text-white transition-colors" />
+                      <ChevronDown className="w-4 h-4 text-blue-200 group-hover:text-white transition-colors" />
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-72 rounded-2xl shadow-2xl border border-blue-200 bg-white overflow-hidden">
