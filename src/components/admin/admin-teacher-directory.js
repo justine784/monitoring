@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { collection, getDocs, query, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { firebaseDb } from '@/lib/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ export default function AdminTeacherDirectory() {
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({ name: '', department: '' });
+  const [editForm, setEditForm] = useState({ name: '', schoolId: '', facultyRoom: '' });
   const [savingId, setSavingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [search, setSearch] = useState('');
@@ -35,27 +35,33 @@ export default function AdminTeacherDirectory() {
     setEditingId(teacher.id);
     setEditForm({
       name: teacher.name || '',
-      department: teacher.department || '',
+      schoolId: teacher.schoolId || '',
+      facultyRoom: teacher.facultyRoom || '',
     });
   };
 
   const cancelEdit = () => {
     setEditingId(null);
-    setEditForm({ name: '', department: '' });
+    setEditForm({ name: '', schoolId: '', facultyRoom: '' });
   };
 
   const saveEdit = async (id) => {
-    if (!editForm.name.trim()) return;
+    if (!editForm.name.trim() || !editForm.schoolId.trim()) {
+      return;
+    }
     setSavingId(id);
     try {
       const ref = doc(firebaseDb, 'teachers', id);
-      await updateDoc(ref, {
+      const updateData = {
         name: editForm.name.trim(),
-        department: editForm.department.trim(),
-      });
+        schoolId: editForm.schoolId.trim(),
+        facultyRoom: editForm.facultyRoom.trim() || null,
+        updatedAt: serverTimestamp(),
+      };
+      await updateDoc(ref, updateData);
       setTeachers((prev) =>
         prev.map((t) =>
-          t.id === id ? { ...t, name: editForm.name.trim(), department: editForm.department.trim() } : t,
+          t.id === id ? { ...t, ...updateData } : t,
         ),
       );
       cancelEdit();
@@ -93,7 +99,7 @@ export default function AdminTeacherDirectory() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name, ID, or department..."
+            placeholder="Search by name, ID, or faculty room..."
             className="w-full max-w-sm px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
           />
         </div>
@@ -110,8 +116,8 @@ export default function AdminTeacherDirectory() {
                 return (
                   (t.name && t.name.toLowerCase().includes(term)) ||
                   (t.schoolId && String(t.schoolId).toLowerCase().includes(term)) ||
-                  (t.department && t.department.toLowerCase().includes(term)) ||
-                  (t.role && t.role.toLowerCase().includes(term))
+                  (t.role && t.role.toLowerCase().includes(term)) ||
+                  (t.facultyRoom && t.facultyRoom.toLowerCase().includes(term))
                 );
               })
               .map((t) => (
@@ -135,7 +141,7 @@ export default function AdminTeacherDirectory() {
                   </div>
                   <div className="min-w-0 flex-1">
                     {editingId === t.id ? (
-                      <div className="space-y-1">
+                      <div className="space-y-2">
                         <input
                           type="text"
                           value={editForm.name}
@@ -147,12 +153,21 @@ export default function AdminTeacherDirectory() {
                         />
                         <input
                           type="text"
-                          value={editForm.department}
+                          value={editForm.schoolId}
                           onChange={(e) =>
-                            setEditForm((prev) => ({ ...prev, department: e.target.value }))
+                            setEditForm((prev) => ({ ...prev, schoolId: e.target.value }))
+                          }
+                          className="w-full px-2 py-1 border border-slate-300 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-lime-500 focus:border-transparent font-mono"
+                          placeholder="School ID"
+                        />
+                        <input
+                          type="text"
+                          value={editForm.facultyRoom}
+                          onChange={(e) =>
+                            setEditForm((prev) => ({ ...prev, facultyRoom: e.target.value }))
                           }
                           className="w-full px-2 py-1 border border-slate-300 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-lime-500 focus:border-transparent"
-                          placeholder="Department"
+                          placeholder="Faculty Room (optional)"
                         />
                       </div>
                     ) : (
@@ -163,8 +178,12 @@ export default function AdminTeacherDirectory() {
                         </p>
                         <p className="text-xs text-slate-500 capitalize">
                           {t.role}
-                          {t.department ? ` • ${t.department}` : ''}
                         </p>
+                        {t.facultyRoom && (
+                          <p className="text-xs text-blue-600 mt-1 font-medium">
+                            🏢 {t.facultyRoom}
+                          </p>
+                        )}
                       </>
                     )}
                   </div>

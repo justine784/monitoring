@@ -60,6 +60,40 @@ export function AuthProvider({ children }) {
     return () => unsubscribe();
   }, []);
 
+  // Auto-detect role based on school ID
+  const loginWithAutoDetect = async ({ schoolId }) => {
+    if (!schoolId) {
+      throw new Error('School ID is required');
+    }
+
+    // First, check the teachers collection to determine role
+    const teacherRef = doc(firebaseDb, 'teachers', schoolId);
+    const teacherSnap = await getDoc(teacherRef);
+    
+    let detectedRole = 'employee'; // Default to employee
+    let name = 'Employee';
+    
+    if (teacherSnap.exists()) {
+      const teacherData = teacherSnap.data();
+      // If role is 'teacher', it's a teacher, otherwise it's an employee
+      detectedRole = teacherData.role === 'teacher' ? 'teacher' : 'employee';
+      name = teacherData.name || (detectedRole === 'teacher' ? 'Teacher' : 'Employee');
+    } else {
+      // Check users collection for existing profile
+      const userRef = doc(firebaseDb, 'users', schoolId);
+      const userSnap = await getDoc(userRef);
+      
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        detectedRole = userData.role === 'teacher' ? 'teacher' : 'employee';
+        name = userData.name || (detectedRole === 'teacher' ? 'Teacher' : 'Employee');
+      }
+    }
+
+    // Now use the detected role to login
+    return loginTeacherOrEmployee({ schoolId, role: detectedRole });
+  };
+
   const loginTeacherOrEmployee = async ({ schoolId, role }) => {
     if (!schoolId) {
       throw new Error('School ID is required');
@@ -179,7 +213,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, initialising, loginTeacherOrEmployee, loginAdmin, logout }}>
+    <AuthContext.Provider value={{ user, initialising, loginTeacherOrEmployee, loginWithAutoDetect, loginAdmin, logout }}>
       {children}
     </AuthContext.Provider>
   );

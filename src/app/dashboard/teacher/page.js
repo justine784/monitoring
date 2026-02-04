@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import TeacherClock from '@/components/teacher/teacher-clock';
+import TeacherLocation from '@/components/teacher/teacher-location';
 import { LogOut } from 'lucide-react';
 import {
   DropdownMenu,
@@ -140,6 +141,11 @@ export default function TeacherDashboard() {
           {/* Clock Section */}
           <div className="bg-white rounded-lg border p-6">
             <TeacherClock teacherId={user.schoolId} />
+          </div>
+
+          {/* Location Section */}
+          <div className="bg-white rounded-lg border p-6">
+            <TeacherLocation />
           </div>
         </div>
       </main>

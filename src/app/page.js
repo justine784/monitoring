@@ -40,8 +40,8 @@ export default function Home() {
           return (
             (item.name && item.name.toLowerCase().includes(term)) ||
             (item.schoolId && String(item.schoolId).toLowerCase().includes(term)) ||
-            (item.department && item.department.toLowerCase().includes(term)) ||
-            (item.role && item.role.toLowerCase().includes(term))
+            (item.role && item.role.toLowerCase().includes(term)) ||
+            (item.facultyRoom && item.facultyRoom.toLowerCase().includes(term))
           );
         });
 
@@ -238,7 +238,7 @@ export default function Home() {
                 </div>
                 <input
                   type="text"
-                  placeholder="Search teachers, employees, students, or records..."
+                  placeholder="Search teachers, employees, faculty rooms, or records..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
@@ -301,8 +301,12 @@ export default function Home() {
                               </p>
                               <p className="text-xs text-slate-500 capitalize">
                                 {item.role}
-                                {item.department ? ` • ${item.department}` : ''}
                               </p>
+                              {item.facultyRoom && (
+                                <p className="text-xs text-blue-600 mt-1">
+                                  🏢 {item.facultyRoom}
+                                </p>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -337,7 +341,7 @@ export default function Home() {
                   </div>
                   <input
                     type="text"
-                    placeholder="Search teachers by name, ID, or department..."
+                    placeholder="Search teachers by name, ID, or faculty room..."
                     value={teacherSearchQuery}
                     onChange={(e) => setTeacherSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
@@ -366,7 +370,7 @@ export default function Home() {
                       return (
                         (teacher.name && teacher.name.toLowerCase().includes(term)) ||
                         (teacher.schoolId && String(teacher.schoolId).toLowerCase().includes(term)) ||
-                        (teacher.department && teacher.department.toLowerCase().includes(term))
+                        (teacher.facultyRoom && teacher.facultyRoom.toLowerCase().includes(term))
                       );
                     });
 
@@ -402,9 +406,11 @@ export default function Home() {
                                   <p className="text-xs text-slate-600 mt-1">
                                     ID: <span className="font-mono">{teacher.schoolId}</span>
                                   </p>
-                                  <p className="text-xs text-slate-500 capitalize mt-1">
-                                    {teacher.department || 'No department'}
-                                  </p>
+                                  {teacher.facultyRoom && (
+                                    <p className="text-xs text-blue-600 mt-1 font-medium">
+                                      🏢 {teacher.facultyRoom}
+                                    </p>
+                                  )}
                                 </div>
                               </div>
                             </CardContent>
@@ -471,7 +477,6 @@ export default function Home() {
                             </p>
                             <p className="text-xs text-slate-500 capitalize mt-1">
                               {employee.role || 'employee'}
-                              {employee.department ? ` • ${employee.department}` : ''}
                             </p>
                           </div>
                         </div>

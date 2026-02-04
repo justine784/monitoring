@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 export default function AdminTeacherForm() {
   const [name, setName] = useState('');
   const [schoolId, setSchoolId] = useState('');
-  const [department, setDepartment] = useState('');
+  const [facultyRoom, setFacultyRoom] = useState('');
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [loading, setLoading] = useState(false);
@@ -35,8 +35,8 @@ export default function AdminTeacherForm() {
     setError('');
     setMessage('');
 
-    if (!name.trim() || !schoolId.trim() || !department.trim()) {
-      setError('Name, School ID, and Department are required.');
+    if (!name.trim() || !schoolId.trim()) {
+      setError('Name and School ID are required.');
       return;
     }
 
@@ -66,7 +66,7 @@ export default function AdminTeacherForm() {
         name: name.trim(),
         schoolId: schoolId.trim(),
         role: 'teacher',
-        department: department.trim(),
+        facultyRoom: facultyRoom.trim() || null,
         photoURL,
         photoPath,
         createdAt: serverTimestamp(),
@@ -76,7 +76,7 @@ export default function AdminTeacherForm() {
       setMessage('Teacher saved successfully.');
       setName('');
       setSchoolId('');
-      setDepartment('');
+      setFacultyRoom('');
       setFile(null);
       setPreviewUrl('');
     } catch (err) {
@@ -120,13 +120,13 @@ export default function AdminTeacherForm() {
             </div>
 
             <div className="space-y-1">
-              <label className="block text-xs font-medium text-slate-700">Department</label>
+              <label className="block text-xs font-medium text-slate-700">Faculty Room</label>
               <input
                 type="text"
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
+                value={facultyRoom}
+                onChange={(e) => setFacultyRoom(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
-                placeholder="e.g. Registrar, Finance"
+                placeholder="e.g. Room 101, Faculty Office A"
               />
             </div>
 

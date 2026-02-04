@@ -5,27 +5,25 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function LoginPage() {
-  const { loginTeacherOrEmployee, loginAdmin } = useAuth();
+  const { loginWithAutoDetect, loginAdmin } = useAuth();
   const router = useRouter();
 
   const [schoolId, setSchoolId] = useState('');
-  const [teacherOrEmployeeRole, setTeacherOrEmployeeRole] = useState('teacher');
-
   const [adminEmail, setAdminEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleTeacherEmployeeLogin = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      loginTeacherOrEmployee({ schoolId, role: teacherOrEmployeeRole });
+      await loginWithAutoDetect({ schoolId });
     } catch (err) {
       setError(err.message || 'Login failed');
     } finally {
@@ -38,7 +36,7 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      loginAdmin({ email: adminEmail, password: adminPassword });
+      await loginAdmin({ email: adminEmail, password: adminPassword });
     } catch (err) {
       setError(err.message || 'Login failed');
     } finally {
@@ -76,92 +74,88 @@ export default function LoginPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="teacher-employee" className="w-full">
-              <TabsList className="grid grid-cols-2 w-full mb-4 bg-lime-50">
-                <TabsTrigger value="teacher-employee">Teacher / Employee</TabsTrigger>
-                <TabsTrigger value="admin">Admin</TabsTrigger>
-              </TabsList>
+            {error && (
+              <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded px-3 py-2">
+                {error}
+              </div>
+            )}
 
-              {error && (
-                <div className="mb-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded px-3 py-2">
-                  {error}
+            {!showAdminLogin ? (
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-slate-700">School ID</label>
+                  <input
+                    type="text"
+                    value={schoolId}
+                    onChange={(e) => setSchoolId(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                    placeholder="Enter your School ID"
+                    required
+                  />
+                  <p className="text-xs text-slate-500 mt-1">
+                    Enter your School ID to automatically access your dashboard
+                  </p>
                 </div>
-              )}
 
-              <TabsContent value="teacher-employee">
-                <form onSubmit={handleTeacherEmployeeLogin} className="space-y-4">
-                  <div className="flex gap-2 text-sm">
-                    <button
-                      type="button"
-                      className={`flex-1 border rounded-md px-3 py-2 ${
-                        teacherOrEmployeeRole === 'teacher'
-                          ? 'border-blue-500 bg-blue-50 text-blue-700'
-                          : 'border-slate-300 text-slate-700'
-                      }`}
-                      onClick={() => setTeacherOrEmployeeRole('teacher')}
-                    >
-                      Teacher
-                    </button>
-                    <button
-                      type="button"
-                      className={`flex-1 border rounded-md px-3 py-2 ${
-                        teacherOrEmployeeRole === 'employee'
-                          ? 'border-blue-500 bg-blue-50 text-blue-700'
-                          : 'border-slate-300 text-slate-700'
-                      }`}
-                      onClick={() => setTeacherOrEmployeeRole('employee')}
-                    >
-                      Employee
-                    </button>
-                  </div>
+                <Button type="submit" className="w-full bg-lime-600 hover:bg-lime-700" disabled={loading}>
+                  {loading ? 'Signing in...' : 'Sign in'}
+                </Button>
 
-                  <div className="space-y-1">
-                    <label className="block text-sm font-medium text-slate-700">School ID</label>
-                    <input
-                      type="text"
-                      value={schoolId}
-                      onChange={(e) => setSchoolId(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
-                      placeholder="Enter your School ID"
-                    />
-                  </div>
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowAdminLogin(true)}
+                    className="text-xs text-slate-500 hover:text-slate-700 underline"
+                  >
+                    Admin Login
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleAdminLogin} className="space-y-4">
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-slate-700">Email</label>
+                  <input
+                    type="email"
+                    value={adminEmail}
+                    onChange={(e) => setAdminEmail(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                    placeholder="admin@school.com"
+                    required
+                  />
+                </div>
 
-                  <Button type="submit" className="w-full bg-lime-600 hover:bg-lime-700" disabled={loading}>
-                    {loading ? 'Signing in...' : 'Sign in'}
-                  </Button>
-                </form>
-              </TabsContent>
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-slate-700">Password</label>
+                  <input
+                    type="password"
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                    placeholder="Enter your password"
+                    required
+                  />
+                </div>
 
-              <TabsContent value="admin">
-                <form onSubmit={handleAdminLogin} className="space-y-4">
-                  <div className="space-y-1">
-                    <label className="block text-sm font-medium text-slate-700">Email</label>
-                    <input
-                      type="email"
-                      value={adminEmail}
-                      onChange={(e) => setAdminEmail(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
-                      placeholder="admin@school.com"
-                    />
-                  </div>
+                <Button type="submit" className="w-full bg-lime-600 hover:bg-lime-700" disabled={loading}>
+                  {loading ? 'Signing in...' : 'Sign in as Admin'}
+                </Button>
 
-                  <div className="space-y-1">
-                    <label className="block text-sm font-medium text-slate-700">Password</label>
-                    <input
-                      type="password"
-                      value={adminPassword}
-                      onChange={(e) => setAdminPassword(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
-                      placeholder="Enter your password"
-                    />
-                  </div>
-
-                  <Button type="submit" className="w-full bg-lime-600 hover:bg-lime-700" disabled={loading}>
-                    {loading ? 'Signing in...' : 'Sign in as Admin'}
-                  </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAdminLogin(false);
+                      setAdminEmail('');
+                      setAdminPassword('');
+                    }}
+                    className="text-xs text-slate-500 hover:text-slate-700 underline"
+                  >
+                    Back to regular login
+                  </button>
+                </div>
+              </form>
+            )}
           </CardContent>
         </Card>
       </div>
