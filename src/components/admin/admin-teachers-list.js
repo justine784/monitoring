@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
 import { firebaseDb } from '@/lib/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Search, Clock, Users, Briefcase, CheckCircle, AlertCircle, XCircle, TrendingUp } from 'lucide-react';
 
 function getTodayKey() {
   const now = new Date();
@@ -113,116 +114,177 @@ export default function AdminTeachersList() {
   }, {});
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-sm font-medium text-slate-700">
-          Teachers &amp; Employees – Time In / Time Out (Today)
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <p className="text-xs text-slate-500">Loading...</p>
-        ) : rows.length === 0 ? (
-          <p className="text-xs text-slate-500">
-            No teachers or employees yet. Add them above to start monitoring.
-          </p>
-        ) : (
-          <div className="space-y-3">
-            <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by name, ID, role, or employment type..."
-                className="w-full sm:max-w-sm px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
-              />
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] text-slate-600">Filter role:</span>
-                <select
-                  value={roleFilter}
-                  onChange={(e) => setRoleFilter(e.target.value)}
-                  className="px-2 py-1 border border-slate-300 rounded-md text-xs bg-white focus:outline-none focus:ring-1 focus:ring-lime-500 focus:border-transparent"
-                >
-                  <option value="all">All</option>
-                  <option value="teacher">Teacher</option>
-                  <option value="employee">Employee</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-            </div>
+    <div className="space-y-6">
+      {/* Header Section */}
+      <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl p-6 border border-orange-100">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg">
+            <Clock className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">Time Monitoring Dashboard</h2>
+            <p className="text-sm text-slate-600">Today's attendance and time tracking for all staff</p>
+          </div>
+        </div>
+        
+        {/* Search and Filter */}
+        <div className="flex flex-col lg:flex-row gap-4 items-center">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name, ID, role, or employment type..."
+              className="w-full pl-10 pr-4 py-3 border border-orange-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white shadow-sm"
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-slate-700">Filter:</span>
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="px-4 py-2 border border-orange-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent shadow-sm"
+            >
+              <option value="all">All Roles</option>
+              <option value="teacher">Teachers</option>
+              <option value="employee">Employees</option>
+              <option value="other">Others</option>
+            </select>
+          </div>
+        </div>
+      </div>
 
-            {/* Summary tables: per role and per employment type */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="border rounded-md p-3 bg-slate-50">
-                <p className="text-xs font-semibold text-slate-700 mb-2">
-                  By Role (with time record today)
-                </p>
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-slate-600">Loading time monitoring data...</p>
+          </div>
+        </div>
+      ) : rows.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Clock className="w-8 h-8 text-slate-400" />
+          </div>
+          <p className="text-slate-600">No staff members added yet.</p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white rounded-2xl border border-orange-100 shadow-lg overflow-hidden">
+              <div className="bg-gradient-to-r from-orange-500 to-red-500 p-4">
+                <div className="flex items-center gap-3">
+                  <Users className="w-5 h-5 text-white" />
+                  <h3 className="text-white font-semibold">By Role (Today)</h3>
+                </div>
+              </div>
+              <div className="p-4">
                 {Object.keys(roleCounts).length === 0 ? (
-                  <p className="text-[11px] text-slate-500">No time records yet today.</p>
+                  <div className="text-center py-4">
+                    <AlertCircle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                    <p className="text-sm text-slate-500">No time records yet today.</p>
+                  </div>
                 ) : (
-                  <table className="w-full text-xs">
-                    <thead>
-                      <tr className="text-slate-500 border-b">
-                        <th className="py-1 pr-2 text-left">Role</th>
-                        <th className="py-1 pr-2 text-right">Count</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Object.entries(roleCounts).map(([role, count]) => (
-                        <tr key={role} className="border-b last:border-0">
-                          <td className="py-1 pr-2 capitalize text-slate-700">{role}</td>
-                          <td className="py-1 pr-2 text-right font-medium text-slate-800">
-                            {count}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-
-              <div className="border rounded-md p-3 bg-slate-50">
-                <p className="text-xs font-semibold text-slate-700 mb-2">
-                  By Employment Type (with time record today)
-                </p>
-                {Object.keys(employmentCounts).length === 0 ? (
-                  <p className="text-[11px] text-slate-500">No time records yet today.</p>
-                ) : (
-                  <table className="w-full text-xs">
-                    <thead>
-                      <tr className="text-slate-500 border-b">
-                        <th className="py-1 pr-2 text-left">Employment Type</th>
-                        <th className="py-1 pr-2 text-right">Count</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Object.entries(employmentCounts).map(([type, count]) => (
-                        <tr key={type} className="border-b last:border-0">
-                          <td className="py-1 pr-2 text-slate-700">{type}</td>
-                          <td className="py-1 pr-2 text-right font-medium text-slate-800">
-                            {count}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <div className="space-y-2">
+                    {Object.entries(roleCounts).map(([role, count]) => (
+                      <div key={role} className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-100">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <Users className="w-4 h-4 text-orange-600" />
+                          </div>
+                          <span className="text-sm font-medium text-slate-900 capitalize">{role}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg font-bold text-orange-600">{count}</span>
+                          <span className="text-xs text-slate-500">staff</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>
 
+            <div className="bg-white rounded-2xl border border-purple-100 shadow-lg overflow-hidden">
+              <div className="bg-gradient-to-r from-purple-500 to-indigo-500 p-4">
+                <div className="flex items-center gap-3">
+                  <Briefcase className="w-5 h-5 text-white" />
+                  <h3 className="text-white font-semibold">By Employment Type (Today)</h3>
+                </div>
+              </div>
+              <div className="p-4">
+                {Object.keys(employmentCounts).length === 0 ? (
+                  <div className="text-center py-4">
+                    <AlertCircle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                    <p className="text-sm text-slate-500">No time records yet today.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {Object.entries(employmentCounts).map(([type, count]) => (
+                      <div key={type} className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-100">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <Briefcase className="w-4 h-4 text-purple-600" />
+                          </div>
+                          <span className="text-sm font-medium text-slate-900">{type}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg font-bold text-purple-600">{count}</span>
+                          <span className="text-xs text-slate-500">staff</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Main Table */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
+            <div className="bg-gradient-to-r from-slate-700 to-slate-900 p-4">
+              <h3 className="text-white font-semibold flex items-center gap-2">
+                <Clock className="w-5 h-5" />
+                Staff Time Records
+              </h3>
+            </div>
+            
             <div className="overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead>
-                  <tr className="text-left text-slate-500 border-b">
-                    <th className="py-2 pr-4">Name</th>
-                    <th className="py-2 pr-4">Role</th>
-                    <th className="py-2 pr-4">Employment Type</th>
-                    <th className="py-2 pr-4">Time In</th>
-                    <th className="py-2 pr-4">Time Out</th>
-                    <th className="py-2 pr-4">Status</th>
+              <table className="w-full">
+                <thead className="bg-slate-50 border-b border-slate-200">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4" />
+                        Name
+                      </div>
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">
+                      Role
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">
+                      Employment Type
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        Time In
+                      </div>
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        Time Out
+                      </div>
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">
+                      Status
+                    </th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="bg-white divide-y divide-slate-200">
                   {rows
                     .filter((t) => {
                       const matchesSearch = (() => {
@@ -242,25 +304,61 @@ export default function AdminTeachersList() {
 
                       return matchesSearch && matchesRole;
                     })
-                    .map((t) => (
-                      <tr key={t.id} className="border-b last:border-0">
-                        <td className="py-2 pr-4">{t.name}</td>
-                        <td className="py-2 pr-4 text-slate-600 capitalize">{t.role}</td>
-                        <td className="py-2 pr-4 text-slate-600">
-                          {t.employmentType && t.employmentType.trim().length > 0
-                            ? t.employmentType
-                            : '-'}
+                    .map((t, index) => (
+                      <tr key={t.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center mr-3">
+                              <span className="text-xs font-medium text-slate-600">
+                                {t.name ? t.name.charAt(0).toUpperCase() : '?'}
+                              </span>
+                            </div>
+                            <div>
+                              <div className="text-sm font-medium text-slate-900">{t.name}</div>
+                              <div className="text-xs text-slate-500 font-mono">ID: {t.schoolId}</div>
+                            </div>
+                          </div>
                         </td>
-                        <td className="py-2 pr-4">{t.timeIn}</td>
-                        <td className="py-2 pr-4">{t.timeOut}</td>
-                        <td
-                          className={`py-2 pr-4 font-medium ${
-                            t.status === 'Present' || t.status === 'In campus'
-                              ? 'text-green-600'
-                              : 'text-slate-600'
-                          }`}
-                        >
-                          {t.status}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {t.role}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm text-slate-600">
+                            {t.employmentType && t.employmentType.trim().length > 0
+                              ? t.employmentType
+                              : '-'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <Clock className="w-4 h-4 text-slate-400 mr-2" />
+                            <span className="text-sm text-slate-900 font-mono">{t.timeIn}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <Clock className="w-4 h-4 text-slate-400 mr-2" />
+                            <span className="text-sm text-slate-900 font-mono">{t.timeOut}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                            t.status === 'Present' 
+                              ? 'bg-green-100 text-green-800'
+                              : t.status === 'In campus'
+                              ? 'bg-blue-100 text-blue-800'
+                              : t.status === 'Incomplete'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-slate-100 text-slate-800'
+                          }`}>
+                            {t.status === 'Present' && <CheckCircle className="w-3 h-3 mr-1" />}
+                            {t.status === 'In campus' && <Clock className="w-3 h-3 mr-1" />}
+                            {t.status === 'Incomplete' && <AlertCircle className="w-3 h-3 mr-1" />}
+                            {t.status === 'No record today' && <XCircle className="w-3 h-3 mr-1" />}
+                            {t.status}
+                          </span>
                         </td>
                       </tr>
                     ))}
@@ -268,8 +366,8 @@ export default function AdminTeachersList() {
               </table>
             </div>
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+      )}
+    </div>
   );
 }

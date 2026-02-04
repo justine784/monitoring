@@ -240,9 +240,16 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
-    await signOut(firebaseAuth);
-    setUser(null);
-    router.push('/login');
+    try {
+      await signOut(firebaseAuth);
+      setUser(null);
+      router.push('/login');
+    } catch (error) {
+      console.error('Firebase signOut error:', error);
+      // Still clear local state and redirect even if Firebase signOut fails
+      setUser(null);
+      router.push('/login');
+    }
   };
 
   const sendPasswordReset = async (email) => {

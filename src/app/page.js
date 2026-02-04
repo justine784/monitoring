@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookOpen, Users, BarChart3, Shield, Search, LogOut } from 'lucide-react';
+import { BookOpen, Users, BarChart3, Shield, Search, LogOut, GraduationCap, Award, Clock, MapPin, TrendingUp, ChevronRight, Menu, X, Briefcase } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { firebaseDb } from '@/lib/firebase';
@@ -20,6 +20,7 @@ export default function Home() {
   const [employees, setEmployees] = useState([]);
   const [listLoading, setListLoading] = useState(false);
   const [teacherSearchQuery, setTeacherSearchQuery] = useState('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const performSearch = async () => {
@@ -110,257 +111,413 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-lime-50">
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-6 flex gap-6 min-h-screen">
-        {/* Sidebar */}
-        <aside className="hidden md:flex md:flex-col h-full w-64 rounded-2xl bg-white shadow-md border border-slate-100 px-4 py-6">
-          <div className="flex items-center gap-3 mb-8">
-            <button
-              type="button"
-              onClick={() => {
-                setActiveView('home');
-                setSearchQuery('');
-                setTeacherSearchQuery('');
-              }}
-              className="cursor-pointer hover:opacity-80 transition-opacity"
-            >
-              <img
-                src="/logo.jpg"
-                alt="School Monitor Logo"
-                className="w-12 h-12 rounded-lg shadow-md logo-animate object-cover"
-              />
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setActiveView('home');
-                setSearchQuery('');
-                setTeacherSearchQuery('');
-              }}
-              className="title-animate cursor-pointer hover:opacity-80 transition-opacity text-left"
-            >
-              <h1 className="text-lg font-bold text-slate-900">Mindoro State University</h1>
-              <p className="text-[11px] text-slate-500"></p>
-            </button>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      {/* Animated Background Pattern */}
+      <div className="absolute inset-0">
+        <div className="absolute top-0 left-0 w-96 h-96 bg-blue-200/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-200/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-indigo-200/10 rounded-full blur-3xl animate-pulse delay-500"></div>
+      </div>
+      
+      {/* Floating Icons */}
+      <div className="absolute top-10 left-10 text-blue-200/30 animate-bounce">
+        <GraduationCap className="w-16 h-16" />
+      </div>
+      <div className="absolute top-20 right-20 text-purple-200/30 animate-bounce delay-300">
+        <BookOpen className="w-12 h-12" />
+      </div>
+      <div className="absolute bottom-20 left-20 text-indigo-200/30 animate-bounce delay-700">
+        <Award className="w-14 h-14" />
+      </div>
 
-          {user && (
-            <div className="mb-6 flex items-center gap-3 px-3 py-2 bg-slate-50 rounded-lg border border-slate-200">
-              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs font-bold">{user.name.charAt(0)}</span>
+      <div className="relative z-10">
+        {/* Header */}
+        <header className="bg-white/90 backdrop-blur-sm shadow-lg border-b border-white/20 sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <img
+                    src="/logo.jpg"
+                    alt="School Monitor Logo"
+                    className="w-12 h-12 rounded-xl shadow-lg object-cover border-2 border-white"
+                  />
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-slate-900">Mindoro State University</h1>
+                  <p className="text-sm text-slate-600">Monitoring System</p>
+                </div>
               </div>
-              <div className="text-xs">
-                <p className="font-semibold text-slate-900 truncate max-w-[130px]">{user.name}</p>
-                <p className="text-[11px] text-slate-600">ID: {user.schoolId}</p>
+              
+              <div className="flex items-center gap-4">
+                {/* Search Bar */}
+                <div className="hidden md:flex items-center gap-2 bg-white rounded-lg border border-slate-200 px-3 py-2 shadow-sm">
+                  <Search className="w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search teachers, employees..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="flex-1 outline-none text-sm bg-transparent"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+                
+                {/* User Menu */}
+                {user ? (
+                  <div className="flex items-center gap-3">
+                    <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg border border-blue-100">
+                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">{user.name.charAt(0)}</span>
+                      </div>
+                      <div className="text-xs">
+                        <p className="font-semibold text-slate-900 truncate max-w-[100px]">{user.name}</p>
+                        <p className="text-[11px] text-slate-600">ID: {user.schoolId}</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => logout()}
+                      className="flex items-center gap-2"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span className="hidden sm:inline">Logout</span>
+                    </Button>
+                  </div>
+                ) : (
+                  <Button onClick={() => router.push('/login')} className="bg-blue-600 hover:bg-blue-700">
+                    Login
+                  </Button>
+                )}
+                
+                {/* Mobile Menu Toggle */}
+                <button
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className="md:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors"
+                >
+                  {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                </button>
               </div>
             </div>
-          )}
+          </div>
+        </header>
 
-          <nav className="flex-1 space-y-1 text-sm">
-            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-2">
-              Dashboards
-            </p>
-            <button
-              type="button"
-              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-700 border border-blue-100 text-left"
-              onClick={() => goToDashboard('admin')}
-            >
-              <Shield className="w-4 h-4" />
-              <span className="truncate">Admin</span>
-            </button>
-            <button
-              type="button"
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left ${
-                activeView === 'teachers'
-                  ? 'bg-blue-50 text-blue-700 border border-blue-100'
-                  : 'hover:bg-slate-50 text-slate-700'
-              }`}
-              onClick={() => {
-                setActiveView('teachers');
-                setSearchQuery(''); // Clear main search when viewing teachers
-              }}
-            >
-              <Users className="w-4 h-4" />
-              <span className="truncate">Teacher</span>
-            </button>
-            <button
-              type="button"
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left ${
-                activeView === 'employees'
-                  ? 'bg-blue-50 text-blue-700 border border-blue-100'
-                  : 'hover:bg-slate-50 text-slate-700'
-              }`}
-              onClick={() => {
-                setActiveView('employees');
-                setSearchQuery(''); // Clear main search when viewing employees
-              }}
-            >
-              <Users className="w-4 h-4" />
-              <span className="truncate">Employee</span>
-            </button>
-          </nav>
-        </aside>
-
-        {/* Main content */}
-        <main className="flex-1 flex flex-col h-full">
-          {/* Top bar (search, fallback login on mobile) */}
-          <div className="mb-4">
-            <div className="flex items-center justify-between gap-3 mb-4 md:hidden">
-              <div 
-                className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
-                onClick={() => {
-                  setActiveView('home');
-                  setSearchQuery('');
-                  setTeacherSearchQuery('');
-                }}
-              >
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden fixed inset-0 z-50 bg-white/95 backdrop-blur-sm">
+            <div className="flex items-center justify-between p-4 border-b">
+              <div className="flex items-center gap-3">
                 <img
                   src="/logo.jpg"
                   alt="School Monitor Logo"
-                  className="w-10 h-10 rounded-lg shadow-md logo-animate object-cover"
+                  className="w-10 h-10 rounded-lg shadow-lg object-cover"
                 />
-                <div className="title-animate">
-                  <h1 className="text-base font-bold text-slate-900">School Monitor</h1>
-                  <p className="text-[11px] text-slate-600">Attendance &amp; Logbook System</p>
+                <div>
+                  <h1 className="text-lg font-bold text-slate-900">MSU Monitor</h1>
+                  <p className="text-sm text-slate-600">System</p>
                 </div>
               </div>
-              {!user && (
-                <Button size="sm" onClick={() => router.push('/login')}>
-                  Login
-                </Button>
-              )}
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 rounded-lg hover:bg-slate-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-
-            <div className="flex items-center gap-2">
-              <div className="flex-1 relative">
-                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
-                  <Search className="w-5 h-5" />
+            
+            <nav className="p-4 space-y-2">
+              <button
+                onClick={() => {
+                  setActiveView('home');
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-50 transition-colors text-left"
+              >
+                <BarChart3 className="w-5 h-5 text-blue-600" />
+                <div>
+                  <p className="font-medium text-slate-900">Home</p>
+                  <p className="text-xs text-slate-500">Overview</p>
                 </div>
-                <input
-                  type="text"
-                  placeholder="Search teachers, employees, positions, or records..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                />
-              </div>
+              </button>
+              
+              <button
+                onClick={() => {
+                  setActiveView('teachers');
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-50 transition-colors text-left"
+              >
+                <Users className="w-5 h-5 text-green-600" />
+                <div>
+                  <p className="font-medium text-slate-900">Teachers</p>
+                  <p className="text-xs text-slate-500">{teachers.length} registered</p>
+                </div>
+              </button>
+              
+              <button
+                onClick={() => {
+                  setActiveView('employees');
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-50 transition-colors text-left"
+              >
+                <Users className="w-5 h-5 text-purple-600" />
+                <div>
+                  <p className="font-medium text-slate-900">Employees</p>
+                  <p className="text-xs text-slate-500">{employees.length} registered</p>
+                </div>
+              </button>
+              
+              {user && (
+                <button
+                  onClick={() => logout()}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-red-50 transition-colors text-left"
+                >
+                  <LogOut className="w-5 h-5 text-red-600" />
+                  <div>
+                    <p className="font-medium text-slate-900">Logout</p>
+                    <p className="text-xs text-slate-500">Sign out</p>
+                  </div>
+                </button>
+              )}
+            </nav>
+          </div>
+        )}
+
+        {/* Main Content */}
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Mobile Search Bar */}
+          <div className="md:hidden mb-6">
+            <div className="flex items-center gap-2 bg-white rounded-lg border border-slate-200 px-3 py-2 shadow-sm">
+              <Search className="w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search teachers, employees..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1 outline-none text-sm bg-transparent"
+              />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="px-3 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                  className="text-slate-400 hover:text-slate-600 transition-colors"
                 >
-                  Clear
+                  <X className="w-4 h-4" />
                 </button>
               )}
             </div>
+          </div>
 
-            {/* Search Results */}
+            {/* Enhanced Search Results */}
             {searchQuery && (
-              <div className="mt-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">
-                      {searchLoading ? (
-                        'Searching...'
-                      ) : (
-                        `Search Results (${searchResults.length})`
-                      )}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
+              <div className="mt-6">
+                <div className="bg-white rounded-2xl border border-blue-100 shadow-lg overflow-hidden">
+                  <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-white font-semibold flex items-center gap-2">
+                        <Search className="w-5 h-5" />
+                        {searchLoading ? (
+                          'Searching...'
+                        ) : (
+                          `Found ${searchResults.length} result${searchResults.length === 1 ? '' : 's'}`
+                        )}
+                      </h3>
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        className="text-white/80 hover:text-white transition-colors"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="p-6">
                     {searchLoading ? (
-                      <p className="text-sm text-slate-500">Loading results...</p>
+                      <div className="flex items-center justify-center py-8">
+                        <div className="text-center">
+                          <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+                          <p className="text-slate-600">Searching staff directory...</p>
+                        </div>
+                      </div>
                     ) : searchResults.length === 0 ? (
-                      <p className="text-sm text-slate-500">No results found.</p>
+                      <div className="text-center py-8">
+                        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Search className="w-8 h-8 text-slate-400" />
+                        </div>
+                        <p className="text-slate-600">No staff members found matching your search.</p>
+                        <p className="text-sm text-slate-500 mt-2">Try different keywords or browse all staff.</p>
+                      </div>
                     ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {searchResults.map((item) => (
                           <div
                             key={item.id}
-                            className="flex items-center gap-3 p-3 border rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors"
+                            className="group bg-gradient-to-br from-white to-blue-50 rounded-2xl border border-blue-100 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
                           >
-                            <div className="w-12 h-12 rounded-full bg-slate-200 overflow-hidden flex-shrink-0">
-                              {item.photoURL ? (
-                                <img
-                                  src={item.photoURL}
-                                  alt={item.name}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-xs text-slate-500">
-                                  {item.name ? item.name.charAt(0).toUpperCase() : '?'}
+                            {/* Card Header */}
+                            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-4">
+                              <div className="flex items-center gap-3">
+                                <div className="relative">
+                                  <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white/30 overflow-hidden flex-shrink-0">
+                                    {item.photoURL ? (
+                                      <img
+                                        src={item.photoURL}
+                                        alt={item.name}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center text-white font-bold text-lg">
+                                        {item.name ? item.name.charAt(0).toUpperCase() : '?'}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
+                                    item.role === 'teacher' ? 'bg-green-400' : 
+                                    item.role === 'employee' ? 'bg-blue-400' : 'bg-purple-400'
+                                  }`}></div>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="text-white font-semibold text-lg truncate">
+                                    {item.name || 'Unknown'}
+                                  </h4>
+                                  <p className="text-blue-100 text-sm">
+                                    {item.role === 'teacher' ? 'Teacher' : item.role === 'employee' ? 'Employee' : 'Other'}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Card Content */}
+                            <div className="p-4 space-y-3">
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                  <Users className="w-4 h-4 text-blue-600" />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-slate-900">{item.name}</p>
+                                  <p className="text-xs text-slate-600 font-mono">ID: {item.schoolId}</p>
+                                </div>
+                              </div>
+                              
+                              {item.position && (
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <Briefcase className="w-4 h-4 text-green-600" />
+                                  </div>
+                                  <p className="text-sm text-slate-700">{item.position}</p>
                                 </div>
                               )}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium text-slate-900 truncate">
-                                {item.name || 'Unknown'}
-                              </p>
-                              <p className="text-xs text-slate-600">
-                                ID: <span className="font-mono">{item.schoolId}</span>
-                              </p>
-                              <p className="text-xs text-slate-500 capitalize">
-                                {item.role}
-                              </p>
-                              {item.position && (
-                                <p className="text-xs text-slate-600 mt-1">
-                                  {item.position}
-                                </p>
-                              )}
+
+                              <div className="flex gap-2 pt-2">
+                                <button
+                                  onClick={() => {
+                                    setActiveView(item.role === 'teacher' ? 'teachers' : 'employees');
+                                    setSearchQuery('');
+                                  }}
+                                  className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                                >
+                                  View Profile
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    if (user) {
+                                      goToDashboard(item.role);
+                                    } else {
+                                      router.push('/login');
+                                    }
+                                  }}
+                                  className="flex-1 px-3 py-2 border border-blue-200 text-blue-600 hover:bg-blue-50 text-sm font-medium rounded-lg transition-colors"
+                                >
+                                  Dashboard
+                                </button>
+                              </div>
                             </div>
                           </div>
                         ))}
                       </div>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </div>
             )}
-          </div>
 
-          {/* Teachers List View */}
+          {/* Enhanced Teachers List View */}
           {activeView === 'teachers' && (
             <section>
-              <div className="mb-6 flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold text-slate-900 mb-2">All Teachers</h2>
-                  <p className="text-sm text-slate-600">
-                    {teachers.length} {teachers.length === 1 ? 'teacher' : 'teachers'} registered
-                  </p>
+              <div className="mb-8">
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <div>
+                      <h2 className="text-3xl font-bold text-slate-900 mb-2 flex items-center gap-3">
+                        <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
+                          <GraduationCap className="w-6 h-6 text-white" />
+                        </div>
+                        All Teachers
+                      </h2>
+                      <p className="text-slate-600">
+                        {teachers.length} {teachers.length === 1 ? 'teacher' : 'teachers'} registered in the system
+                      </p>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setActiveView('home')}
+                      className="border-green-200 text-green-600 hover:bg-green-50"
+                    >
+                      <ChevronRight className="w-4 h-4 mr-2 rotate-180" />
+                      Back to Home
+                    </Button>
+                  </div>
                 </div>
-                <Button variant="outline" onClick={() => setActiveView('home')}>
-                  Back to Home
-                </Button>
               </div>
 
-              {/* Teacher Search Box */}
-              <div className="mb-6">
-                <div className="relative max-w-md">
-                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
-                    <Search className="w-5 h-5" />
+              {/* Enhanced Teacher Search Box */}
+              <div className="mb-8">
+                <div className="bg-white rounded-2xl border border-green-100 shadow-lg p-6">
+                  <div className="relative max-w-2xl mx-auto">
+                    <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-green-500">
+                      <Search className="w-5 h-5" />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Search teachers by name, ID, or position..."
+                      value={teacherSearchQuery}
+                      onChange={(e) => setTeacherSearchQuery(e.target.value)}
+                      className="w-full pl-12 pr-4 py-4 border border-green-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
+                    />
+                    {teacherSearchQuery && (
+                      <button
+                        onClick={() => setTeacherSearchQuery('')}
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    )}
                   </div>
-                  <input
-                    type="text"
-                    placeholder="Search teachers by name, ID, or position..."
-                    value={teacherSearchQuery}
-                    onChange={(e) => setTeacherSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                  />
                 </div>
               </div>
 
               {listLoading ? (
-                <Card>
-                  <CardContent className="py-8">
-                    <p className="text-center text-slate-500">Loading teachers...</p>
-                  </CardContent>
-                </Card>
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-slate-600">Loading teachers...</p>
+                  </div>
+                </div>
               ) : teachers.length === 0 ? (
-                <Card>
-                  <CardContent className="py-8">
-                    <p className="text-center text-slate-500">No teachers found.</p>
-                  </CardContent>
-                </Card>
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <GraduationCap className="w-8 h-8 text-slate-400" />
+                  </div>
+                  <p className="text-slate-600">No teachers found in the system.</p>
+                </div>
               ) : (
                 <>
                   {(() => {
@@ -375,46 +532,96 @@ export default function Home() {
                     });
 
                     return filteredTeachers.length === 0 ? (
-                      <Card>
-                        <CardContent className="py-8">
-                          <p className="text-center text-slate-500">No teachers match your search.</p>
-                        </CardContent>
-                      </Card>
+                      <div className="text-center py-12">
+                        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Search className="w-8 h-8 text-slate-400" />
+                        </div>
+                        <p className="text-slate-600">No teachers match your search.</p>
+                        <p className="text-sm text-slate-500 mt-2">Try different keywords.</p>
+                      </div>
                     ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredTeachers.map((teacher) => (
-                          <Card key={teacher.id} className="hover:shadow-md transition-shadow">
-                            <CardContent className="p-4">
+                          <div key={teacher.id} className="group bg-white rounded-2xl border border-green-100 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
+                            {/* Card Header */}
+                            <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-4">
                               <div className="flex items-center gap-3">
-                                <div className="w-16 h-16 rounded-full bg-slate-200 overflow-hidden flex-shrink-0">
-                                  {teacher.photoURL ? (
-                                    <img
-                                      src={teacher.photoURL}
-                                      alt={teacher.name}
-                                      className="w-full h-full object-cover"
-                                    />
-                                  ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-lg font-bold text-slate-500">
-                                      {teacher.name ? teacher.name.charAt(0).toUpperCase() : '?'}
-                                    </div>
-                                  )}
+                                <div className="relative">
+                                  <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white/30 overflow-hidden flex-shrink-0">
+                                    {teacher.photoURL ? (
+                                      <img
+                                        src={teacher.photoURL}
+                                        alt={teacher.name}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center text-white font-bold text-lg">
+                                        {teacher.name ? teacher.name.charAt(0).toUpperCase() : '?'}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
                                 </div>
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-base font-semibold text-slate-900 truncate">
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="text-white font-semibold text-lg truncate">
                                     {teacher.name || 'Unknown'}
-                                  </p>
-                                  <p className="text-xs text-slate-600 mt-1">
-                                    ID: <span className="font-mono">{teacher.schoolId}</span>
-                                  </p>
-                                  {teacher.position && (
-                                    <p className="text-xs text-slate-600 mt-1 font-medium">
-                                      {teacher.position}
-                                    </p>
-                                  )}
+                                  </h4>
+                                  <p className="text-green-100 text-sm">Teacher</p>
                                 </div>
                               </div>
-                            </CardContent>
-                          </Card>
+                            </div>
+
+                            {/* Card Content */}
+                            <div className="p-4 space-y-3">
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                  <Users className="w-4 h-4 text-green-600" />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-slate-900">{teacher.name}</p>
+                                  <p className="text-xs text-slate-600 font-mono">ID: {teacher.schoolId}</p>
+                                </div>
+                              </div>
+                              
+                              {teacher.position && (
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <Briefcase className="w-4 h-4 text-blue-600" />
+                                  </div>
+                                  <p className="text-sm text-slate-700">{teacher.position}</p>
+                                </div>
+                              )}
+
+                              <div className="flex gap-2 pt-2">
+                                <button
+                                  onClick={() => {
+                                    if (user && user.role === 'admin') {
+                                      router.push('/dashboard/admin');
+                                    } else if (user && user.role === 'teacher') {
+                                      router.push('/dashboard/teacher');
+                                    } else {
+                                      router.push('/login');
+                                    }
+                                  }}
+                                  className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
+                                >
+                                  View Profile
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    if (user) {
+                                      goToDashboard('teacher');
+                                    } else {
+                                      router.push('/login');
+                                    }
+                                  }}
+                                  className="flex-1 px-3 py-2 border border-green-200 text-green-600 hover:bg-green-50 text-sm font-medium rounded-lg transition-colors"
+                                >
+                                  Dashboard
+                                </button>
+                              </div>
+                            </div>
+                          </div>
                         ))}
                       </div>
                     );
@@ -424,64 +631,138 @@ export default function Home() {
             </section>
           )}
 
-          {/* Employees List View */}
+          {/* Enhanced Employees List View */}
           {activeView === 'employees' && (
             <section>
-              <div className="mb-6 flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold text-slate-900 mb-2">Employees Directory</h2>
-                  <p className="text-sm text-slate-600">View all registered employees, students, and parents</p>
+              <div className="mb-8">
+                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-6 border border-purple-100">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <div>
+                      <h2 className="text-3xl font-bold text-slate-900 mb-2 flex items-center gap-3">
+                        <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
+                          <Users className="w-6 h-6 text-white" />
+                        </div>
+                        Employees Directory
+                      </h2>
+                      <p className="text-slate-600">
+                        {employees.length} {employees.length === 1 ? 'employee' : 'employees'} registered in the system
+                      </p>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setActiveView('home')}
+                      className="border-purple-200 text-purple-600 hover:bg-purple-50"
+                    >
+                      <ChevronRight className="w-4 h-4 mr-2 rotate-180" />
+                      Back to Home
+                    </Button>
+                  </div>
                 </div>
-                <Button variant="outline" onClick={() => setActiveView('home')}>
-                  Back to Home
-                </Button>
               </div>
 
               {listLoading ? (
-                <Card>
-                  <CardContent className="py-8">
-                    <p className="text-center text-slate-500">Loading employees...</p>
-                  </CardContent>
-                </Card>
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-slate-600">Loading employees...</p>
+                  </div>
+                </div>
               ) : employees.length === 0 ? (
-                <Card>
-                  <CardContent className="py-8">
-                    <p className="text-center text-slate-500">No employees found.</p>
-                  </CardContent>
-                </Card>
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Users className="w-8 h-8 text-slate-400" />
+                  </div>
+                  <p className="text-slate-600">No employees found in the system.</p>
+                </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {employees.map((employee) => (
-                    <Card key={employee.id} className="hover:shadow-md transition-shadow">
-                      <CardContent className="p-4">
+                    <div key={employee.id} className="group bg-white rounded-2xl border border-purple-100 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
+                      {/* Card Header */}
+                      <div className="bg-gradient-to-r from-purple-500 to-indigo-600 p-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-16 h-16 rounded-full bg-slate-200 overflow-hidden flex-shrink-0">
-                            {employee.photoURL ? (
-                              <img
-                                src={employee.photoURL}
-                                alt={employee.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-lg font-bold text-slate-500">
-                                {employee.name ? employee.name.charAt(0).toUpperCase() : '?'}
-                              </div>
-                            )}
+                          <div className="relative">
+                            <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white/30 overflow-hidden flex-shrink-0">
+                              {employee.photoURL ? (
+                                <img
+                                  src={employee.photoURL}
+                                  alt={employee.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-white font-bold text-lg">
+                                  {employee.name ? employee.name.charAt(0).toUpperCase() : '?'}
+                                </div>
+                              )}
+                            </div>
+                            <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
+                              employee.role === 'employee' ? 'bg-blue-400' : 
+                              employee.role === 'student' ? 'bg-green-400' :
+                              employee.role === 'parent' ? 'bg-purple-400' : 'bg-orange-400'
+                            }`}></div>
                           </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-base font-semibold text-slate-900 truncate">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-white font-semibold text-lg truncate">
                               {employee.name || 'Unknown'}
-                            </p>
-                            <p className="text-xs text-slate-600 mt-1">
-                              ID: <span className="font-mono">{employee.schoolId}</span>
-                            </p>
-                            <p className="text-xs text-slate-500 capitalize mt-1">
+                            </h4>
+                            <p className="text-purple-100 text-sm capitalize">
                               {employee.role || 'employee'}
                             </p>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
+                      </div>
+
+                      {/* Card Content */}
+                      <div className="p-4 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <Users className="w-4 h-4 text-purple-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-slate-900">{employee.name}</p>
+                            <p className="text-xs text-slate-600 font-mono">ID: {employee.schoolId}</p>
+                          </div>
+                        </div>
+                        
+                        {employee.position && (
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                              <Briefcase className="w-4 h-4 text-blue-600" />
+                            </div>
+                            <p className="text-sm text-slate-700">{employee.position}</p>
+                          </div>
+                        )}
+
+                        <div className="flex gap-2 pt-2">
+                          <button
+                            onClick={() => {
+                              if (user && user.role === 'admin') {
+                                router.push('/dashboard/admin');
+                              } else if (user && user.role === 'employee') {
+                                router.push('/dashboard/employee');
+                              } else {
+                                router.push('/login');
+                              }
+                            }}
+                            className="flex-1 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors"
+                          >
+                            View Profile
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (user) {
+                                goToDashboard('employee');
+                              } else {
+                                router.push('/login');
+                              }
+                            }}
+                            className="flex-1 px-3 py-2 border border-purple-200 text-purple-600 hover:bg-purple-50 text-sm font-medium rounded-lg transition-colors"
+                          >
+                            Dashboard
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}
@@ -490,77 +771,89 @@ export default function Home() {
 
           {/* Hero Section */}
           {activeView === 'home' && (
-            <section>
-              <div className="text-left mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">
-                  MINDORO STATE UNIVERSITY MONITORING SYSTEM
-                </h2>
-                <p className="text-sm md:text-base text-slate-600 mb-6 max-w-2xl">
-                  Track attendance, manage logbooks, and monitor academic progress for teachers, employees,
-                  students, and parents in one unified dashboard.
-                </p>
-                <Button size="lg" onClick={() => router.push('/login')}>
-                  Get Started
-                </Button>
+            <section className="text-center py-12">
+              <div className="max-w-4xl mx-auto">
+                <div className="mb-8">
+                  <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+                    Welcome to Mindoro State University Monitoring System
+                  </h2>
+                  <p className="text-lg md:text-xl text-slate-600 mb-8 max-w-3xl mx-auto">
+                    Track attendance, manage logbooks, and monitor academic progress for teachers, employees, students, and parents.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Button 
+                      size="lg" 
+                      onClick={() => router.push('/login')}
+                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-3 px-8 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+                    >
+                      Get Started
+                      <ChevronRight className="w-5 h-5 ml-2" />
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      size="lg"
+                      onClick={() => setActiveView('teachers')}
+                      className="border-blue-200 text-blue-600 hover:bg-blue-50 font-medium py-3 px-8 rounded-lg transition-colors"
+                    >
+                      Browse Teachers/Employee
+                    </Button>
+                  </div>
+                </div>
               </div>
 
-              {/* Features Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                <Card>
-                  <CardHeader>
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white/50 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                       <BarChart3 className="w-6 h-6 text-blue-600" />
                     </div>
-                    <CardTitle className="text-lg">Attendance Tracking</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription>
-                      Real-time attendance monitoring with detailed records and analytics for each person.
-                    </CardDescription>
-                  </CardContent>
-                </Card>
+                    <TrendingUp className="w-4 h-4 text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-slate-900">Attendance Tracking</h3>
+                  <p className="text-sm text-slate-600 mt-2">
+                    Real-time monitoring with detailed analytics and comprehensive records.
+                  </p>
+                </div>
 
-                <Card>
-                  <CardHeader>
-                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white/50 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                       <BookOpen className="w-6 h-6 text-green-600" />
                     </div>
-                    <CardTitle className="text-lg">Logbook Management</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription>
-                      Digital logbook for recording achievements, behavior, and performance notes for each student.
-                    </CardDescription>
-                  </CardContent>
-                </Card>
+                    <TrendingUp className="w-4 h-4 text-green-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-slate-900">Logbook Management</h3>
+                  <p className="text-sm text-slate-600 mt-2">
+                    Digital records for achievements, behavior, and performance tracking.
+                  </p>
+                </div>
 
-                <Card>
-                  <CardHeader>
-                    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white/50 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                       <Users className="w-6 h-6 text-purple-600" />
                     </div>
-                    <CardTitle className="text-lg">Multi-role Views</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription>
-                      Dedicated dashboards for teachers, employees, students, parents, and admins.
-                    </CardDescription>
-                  </CardContent>
-                </Card>
+                    <TrendingUp className="w-4 h-4 text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-slate-900">Multi-role Views</h3>
+                  <p className="text-sm text-slate-600 mt-2">
+                    Dedicated dashboards for teachers, employees, students, and parents.
+                  </p>
+                </div>
 
-                <Card>
-                  <CardHeader>
-                    <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white/50 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
                       <Shield className="w-6 h-6 text-red-600" />
                     </div>
-                    <CardTitle className="text-lg">Secure Access</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription>
-                      Role-based access control with School ID authentication and Firebase security.
-                    </CardDescription>
-                  </CardContent>
-                </Card>
+                    <TrendingUp className="w-4 h-4 text-red-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-slate-900">Secure Access</h3>
+                  <p className="text-sm text-slate-600 mt-2">
+                    Role-based authentication with School ID and Firebase security.
+                  </p>
+                </div>
               </div>
             </section>
           )}

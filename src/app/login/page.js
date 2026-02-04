@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import { Users, Shield, ArrowLeft } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -45,100 +46,127 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen lime-dancing-bg flex items-center justify-center px-4">
-      {/* subtle overlay for readability */}
-      <div className="absolute inset-0 bg-slate-900/10 backdrop-blur-[2px]" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center px-4">
+      <div className="absolute inset-0">
+        <div className="absolute top-0 left-0 w-64 h-64 bg-blue-200/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-0 w-64 h-64 bg-indigo-200/10 rounded-full blur-3xl"></div>
+      </div>
 
-      <div className="relative max-w-3xl w-full">
-        <Card className="shadow-xl border-lime-300/60 bg-white/90 backdrop-blur-sm">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between mb-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="px-0 text-slate-500 hover:text-slate-700"
-                onClick={() => router.push('/')}
-              >
-                ← Back to home
-              </Button>
-            </div>
-            <div className="flex flex-col items-center gap-2">
+      <div className="relative w-full max-w-md">
+        <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white text-center">
+            <div className="flex items-center justify-center mb-4">
               <img
                 src="/logo.jpg"
-                alt="School Monitor Logo"
-                className="w-16 h-16 rounded-full shadow-lg logo-animate object-cover"
+                alt="School Logo"
+                className="w-16 h-16 rounded-full border-3 border-white shadow-lg object-cover"
               />
-              <CardTitle className="text-center text-lime-700 text-base md:text-lg title-animate">
-                Mindoro State University Monitor Login
-              </CardTitle>
             </div>
-          </CardHeader>
-          <CardContent>
+            <h1 className="text-2xl font-bold mb-2">Mindoro State University</h1>
+            <p className="text-blue-100 text-sm">
+              {showAdminLogin ? 'Admin Portal' : 'Employee/Teacher'}
+            </p>
+          </div>
+          
+          <CardContent className="p-6 space-y-6">
             {error && (
-              <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded px-3 py-2">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center">
                 {error}
               </div>
             )}
 
             {!showAdminLogin ? (
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-slate-700">School ID</label>
+              <form onSubmit={handleLogin} className="space-y-5">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-slate-700">
+                    School ID
+                  </label>
                   <input
                     type="text"
                     value={schoolId}
                     onChange={(e) => setSchoolId(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Enter your School ID"
                     required
                   />
-                  <p className="text-xs text-slate-500 mt-1">
-                    Enter your School ID to automatically access your dashboard
-                  </p>
                 </div>
 
-                <Button type="submit" className="w-full bg-lime-600 hover:bg-lime-700" disabled={loading}>
-                  {loading ? 'Signing in...' : 'Sign in'}
+                <Button 
+                  type="submit" 
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors" 
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      Signing in...
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center gap-2">
+                      <Users className="w-4 h-4" />
+                      Sign In
+                    </span>
+                  )}
                 </Button>
 
                 <div className="text-center">
                   <button
                     type="button"
                     onClick={() => setShowAdminLogin(true)}
-                    className="text-xs text-slate-500 hover:text-slate-700 underline"
+                    className="text-sm text-slate-600 hover:text-blue-600 font-medium transition-colors flex items-center gap-2 mx-auto"
                   >
+                    <Shield className="w-4 h-4" />
                     Admin Login
                   </button>
                 </div>
               </form>
             ) : (
-              <form onSubmit={handleAdminLogin} className="space-y-4">
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-slate-700">Email</label>
+              <form onSubmit={handleAdminLogin} className="space-y-5">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-slate-700">
+                    Email Address
+                  </label>
                   <input
                     type="email"
                     value={adminEmail}
                     onChange={(e) => setAdminEmail(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
-                    placeholder="admin@school.com"
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="admin@mindorostate.edu"
                     required
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-slate-700">Password</label>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-slate-700">
+                    Password
+                  </label>
                   <input
                     type="password"
                     value={adminPassword}
                     onChange={(e) => setAdminPassword(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Enter your password"
                     required
                   />
                 </div>
 
-                <Button type="submit" className="w-full bg-lime-600 hover:bg-lime-700" disabled={loading}>
-                  {loading ? 'Signing in...' : 'Sign in as Admin'}
+                <Button 
+                  type="submit" 
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-lg transition-colors" 
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      Signing in...
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center gap-2">
+                      <Shield className="w-4 h-4" />
+                      Sign In as Admin
+                    </span>
+                  )}
                 </Button>
 
                 <div className="text-center">
@@ -149,14 +177,33 @@ export default function LoginPage() {
                       setAdminEmail('');
                       setAdminPassword('');
                     }}
-                    className="text-xs text-slate-500 hover:text-slate-700 underline"
+                    className="text-sm text-slate-600 hover:text-blue-600 font-medium transition-colors flex items-center gap-2 mx-auto"
                   >
-                    Back to regular login
+                    <ArrowLeft className="w-4 h-4" />
+                    Back to User Login
                   </button>
                 </div>
               </form>
             )}
           </CardContent>
+          
+          {/* Footer */}
+          <div className="px-6 pb-6">
+            <div className="text-center">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-slate-500 hover:text-slate-700"
+                onClick={() => router.push('/')}
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Home
+              </Button>
+            </div>
+            <p className="text-center text-xs text-slate-500 mt-4">
+              © 2026 Mindoro State University
+            </p>
+          </div>
         </Card>
       </div>
     </div>

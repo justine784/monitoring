@@ -9,7 +9,7 @@ import AdminTeachersList from '@/components/admin/admin-teachers-list';
 import AdminTeacherForm from '@/components/admin/admin-teacher-form';
 import AdminEmployeeForm from '@/components/admin/admin-employee-form';
 import AdminTeacherDirectory from '@/components/admin/admin-teacher-directory';
-import { LogOut, Settings } from 'lucide-react';
+import { LogOut, Settings, Users, UserCheck, Clock, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { firebaseDb } from '@/lib/firebase';
@@ -23,7 +23,7 @@ function getTodayKey() {
 }
 
 export default function AdminDashboard() {
-  const { user, logout, initialising, sendPasswordReset } = useAuth();
+  const { user, logout, initialising } = useAuth();
   const router = useRouter();
   const [adminTheme, setAdminTheme] = useState('light');
   const [stats, setStats] = useState({
@@ -32,8 +32,6 @@ export default function AdminDashboard() {
     avgHours: 0,
   });
   const [statsLoading, setStatsLoading] = useState(true);
-  const [resetEmail, setResetEmail] = useState('');
-  const [resetStatus, setResetStatus] = useState({ type: '', message: '' });
 
   useEffect(() => {
     if (initialising) return;
@@ -112,6 +110,19 @@ export default function AdminDashboard() {
     return () => clearInterval(interval);
   }, [user]);
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Still try to redirect even if logout fails
+      router.push('/login');
+    }
+  };
+
+  const isDark = adminTheme === 'dark';
+
   if (initialising) {
     return (
       <div className="min-h-screen admin-animated-bg flex items-center justify-center px-4">
@@ -132,38 +143,6 @@ export default function AdminDashboard() {
     return null;
   }
 
-  const handleLogout = () => {
-    logout();
-    router.push('/login');
-  };
-
-  const isDark = adminTheme === 'dark';
-
-  // Keep reset email in sync with current admin email (if any)
-  useEffect(() => {
-    if (user?.email) {
-      setResetEmail(user.email);
-    }
-  }, [user]);
-
-  const handleSendReset = async (e) => {
-    e.preventDefault();
-    setResetStatus({ type: '', message: '' });
-    try {
-      await sendPasswordReset(resetEmail);
-      setResetStatus({
-        type: 'success',
-        message: 'Password reset link sent. Please check your email inbox (and spam folder).',
-      });
-    } catch (err) {
-      console.error('Failed to send password reset email', err);
-      setResetStatus({
-        type: 'error',
-        message: err?.message || 'Failed to send password reset email.',
-      });
-    }
-  };
-
   return (
     <div
       className={
@@ -182,40 +161,43 @@ export default function AdminDashboard() {
       />
 
       {/* Header */}
-      <header className="relative bg-white/80 border-b shadow-sm backdrop-blur-sm sticky top-0 z-50">
+      <header className="relative bg-gradient-to-r from-slate-900 to-slate-800 text-white shadow-lg backdrop-blur-sm sticky top-0 z-50 border-b border-slate-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img
-                src="/logo.jpg"
-                alt="School logo"
-                className="h-10 w-10 rounded-full border border-slate-200 object-cover shadow-sm"
-              />
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <img
+                  src="/logo.jpg"
+                  alt="School logo"
+                  className="h-12 w-12 rounded-full border-2 border-white/20 object-cover shadow-lg"
+                />
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+              </div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-900">Mindoro State University</h1>
-                <p className="text-sm text-slate-600 mt-1">
-                  Monitor teachers and Employees
+                <h1 className="text-xl sm:text-2xl font-bold text-white">Mindoro State University</h1>
+                <p className="text-xs sm:text-sm text-slate-300 mt-1 font-medium">
+                  Admin Dashboard - Monitor teachers and Employees
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <Button
                 variant="outline"
                 size="sm"
-                className="flex items-center gap-2 bg-transparent"
+                className="flex items-center gap-2 bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/30 transition-all duration-200"
                 onClick={() => router.push('/settings')}
               >
                 <Settings className="w-4 h-4" />
-                Settings
+                <span className="hidden sm:inline">Settings</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleLogout}
-                className="flex items-center gap-2 bg-transparent"
+                className="flex items-center gap-2 bg-red-500/20 border-red-500/30 text-red-200 hover:bg-red-500/30 hover:border-red-500/40 transition-all duration-200"
               >
                 <LogOut className="w-4 h-4" />
-                Logout
+                <span className="hidden sm:inline">Logout</span>
               </Button>
             </div>
           </div>
@@ -223,149 +205,87 @@ export default function AdminDashboard() {
       </header>
 
       {/* Main Content */}
-      <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        {/* Account & design settings quick access */}
-        <div className="grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-4">
-          <Card
-            className={
-              isDark
-                ? 'shadow-md border-slate-800 bg-slate-900'
-                : 'shadow-md border-slate-100 bg-white/90'
-            }
-          >
-            <CardHeader className="pb-2">
-              <CardTitle className={`text-sm font-medium ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
-                Admin Account Security
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <p className={isDark ? 'text-xs text-slate-400' : 'text-xs text-slate-500'}>
-                Send yourself a password reset link via email. This uses your admin account on
-                Gmail or any email you registered with Firebase Auth.
+      <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
+        {/* Welcome Section */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 sm:p-8 border border-blue-100 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
+                Welcome back, Admin! 👋
+              </h2>
+              <p className="text-slate-600 text-sm sm:text-base">
+                Here's what's happening with your teachers and employees today.
               </p>
-              <form onSubmit={handleSendReset} className="space-y-2 max-w-md">
-                <label className="block text-xs font-medium text-slate-700">
-                  Admin email
-                </label>
-                <input
-                  type="email"
-                  value={resetEmail}
-                  onChange={(e) => setResetEmail(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
-                  placeholder="your-admin@gmail.com"
-                  required
-                />
-                <Button
-                  type="submit"
-                  size="sm"
-                  className="mt-1 bg-lime-600 hover:bg-lime-700"
-                >
-                  Send password reset link
-                </Button>
-                {resetStatus.message && (
-                  <p
-                    className={`text-xs mt-2 ${
-                      resetStatus.type === 'success' ? 'text-green-600' : 'text-red-600'
-                    }`}
-                  >
-                    {resetStatus.message}
-                  </p>
-                )}
-              </form>
-            </CardContent>
-          </Card>
-
-          <Card
-            className={
-              isDark
-                ? 'shadow-md border-slate-800 bg-slate-900'
-                : 'shadow-md border-slate-100 bg-white/90'
-            }
-          >
-            <CardHeader className="pb-2">
-              <CardTitle className={`text-sm font-medium ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
-                Design Settings
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <p className={isDark ? 'text-xs text-slate-400' : 'text-xs text-slate-500'}>
-                Adjust colors and layout of teacher/employee dashboards.
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2"
-                onClick={() => router.push('/settings')}
-              >
-                Open design settings
-              </Button>
-            </CardContent>
-          </Card>
+            </div>
+            <div className="hidden sm:block">
+              <div className="text-4xl">📊</div>
+            </div>
+          </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Card
-            className={
-              isDark
-                ? 'shadow-md border-slate-800 bg-slate-900'
-                : 'shadow-md shadow-sky-100 border-sky-100 bg-white/90'
-            }
-          >
-            <CardHeader className="pb-2">
-              <CardTitle className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <Card className="group hover:shadow-lg transition-all duration-300 border-0 bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="p-3 bg-blue-500 rounded-xl shadow-md">
+                  <Users className="w-6 h-6 text-white" />
+                </div>
+                <TrendingUp className="w-4 h-4 text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <CardTitle className="text-sm font-medium text-blue-900 mt-3">
                 Total Teachers
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className={`text-3xl font-bold ${isDark ? 'text-slate-50' : 'text-slate-900'}`}>
+              <div className="text-3xl font-bold text-blue-900">
                 {statsLoading ? '...' : stats.totalTeachers}
               </div>
-              <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              <p className="text-xs text-blue-700 mt-1 font-medium">
                 Registered teachers
               </p>
             </CardContent>
           </Card>
 
-          <Card
-            className={
-              isDark
-                ? 'shadow-md border-slate-800 bg-slate-900'
-                : 'shadow-md shadow-emerald-100 border-emerald-100 bg-white/90'
-            }
-          >
-            <CardHeader className="pb-2">
-              <CardTitle className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+          <Card className="group hover:shadow-lg transition-all duration-300 border-0 bg-gradient-to-br from-emerald-50 to-emerald-100 hover:from-emerald-100 hover:to-emerald-200">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="p-3 bg-emerald-500 rounded-xl shadow-md">
+                  <UserCheck className="w-6 h-6 text-white" />
+                </div>
+                <TrendingUp className="w-4 h-4 text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <CardTitle className="text-sm font-medium text-emerald-900 mt-3">
                 Total Employees
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-green-600">
+              <div className="text-3xl font-bold text-emerald-600">
                 {statsLoading ? '...' : stats.totalEmployees}
               </div>
-              <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              <p className="text-xs text-emerald-700 mt-1 font-medium">
                 Registered employees
               </p>
             </CardContent>
           </Card>
 
-          <Card
-            className={
-              isDark
-                ? 'shadow-md border-slate-800 bg-slate-900'
-                : 'shadow-md shadow-blue-100 border-blue-100 bg-white/90'
-            }
-          >
-            <CardHeader className="pb-2">
-              <CardTitle className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                Avg Hours
+          <Card className="group hover:shadow-lg transition-all duration-300 border-0 bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="p-3 bg-purple-500 rounded-xl shadow-md">
+                  <Clock className="w-6 h-6 text-white" />
+                </div>
+                <TrendingUp className="w-4 h-4 text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <CardTitle className="text-sm font-medium text-purple-900 mt-3">
+                Average Hours
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-blue-600">
+              <div className="text-3xl font-bold text-purple-600">
                 {statsLoading ? '...' : (stats.avgHours || 0).toFixed(1)}
               </div>
-              <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              <p className="text-xs text-purple-700 mt-1 font-medium">
                 Hours per day
               </p>
             </CardContent>
@@ -373,39 +293,142 @@ export default function AdminDashboard() {
 
         </div>
 
-        {/* Teachers & Employees management */}
-        <div
-          className={
-            isDark
-              ? 'bg-slate-900 rounded-lg border border-slate-800 p-6 shadow-md space-y-4'
-              : 'bg-white/90 rounded-lg border p-6 shadow-md shadow-slate-100 backdrop-blur-sm space-y-4'
-          }
-        >
-          <h2 className="text-sm font-semibold text-slate-700">
-            Teachers &amp; Employees
-          </h2>
-          <Tabs defaultValue="directory" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-4 mb-4">
-              <TabsTrigger value="directory">Directory</TabsTrigger>
-              <TabsTrigger value="add-teacher">Add Teacher</TabsTrigger>
-              <TabsTrigger value="add-employee">Add Employee</TabsTrigger>
-              <TabsTrigger value="time">Monitor Time</TabsTrigger>
+        {/* Teachers & Employees Management */}
+        <div className="bg-gradient-to-br from-white via-blue-50/30 to-indigo-50/30 rounded-3xl border border-blue-100/50 p-6 sm:p-8 shadow-2xl backdrop-blur-sm space-y-8">
+          {/* Header Section */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Users className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900">
+                    Staff Management Center
+                  </h2>
+                  <p className="text-sm text-slate-600">
+                    Manage teachers, employees, and monitor activities
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Quick Stats */}
+            <div className="flex gap-4">
+              <div className="text-center p-3 bg-blue-50 rounded-xl border border-blue-100">
+                <div className="text-2xl font-bold text-blue-600">{stats.totalTeachers}</div>
+                <div className="text-xs text-blue-600 font-medium">Teachers</div>
+              </div>
+              <div className="text-center p-3 bg-purple-50 rounded-xl border border-purple-100">
+                <div className="text-2xl font-bold text-purple-600">{stats.totalEmployees}</div>
+                <div className="text-xs text-purple-600 font-medium">Employees</div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Enhanced Tabs */}
+          <Tabs defaultValue="directory" className="space-y-8">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-3 p-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-100">
+              <TabsTrigger 
+                value="directory" 
+                className="group flex flex-col items-center gap-2 py-3 px-4 text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:border-blue-200 rounded-xl transition-all duration-300 hover:bg-white/50"
+              >
+                <div className="w-8 h-8 bg-blue-100 group-data-[state=active]:bg-blue-600 rounded-lg flex items-center justify-center transition-colors">
+                  <Users className="w-4 h-4 text-blue-600 group-data-[state=active]:text-white" />
+                </div>
+                <span className="group-data-[state=active]:text-blue-600">Directory</span>
+              </TabsTrigger>
+              
+              <TabsTrigger 
+                value="add-teacher" 
+                className="group flex flex-col items-center gap-2 py-3 px-4 text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:border-blue-200 rounded-xl transition-all duration-300 hover:bg-white/50"
+              >
+                <div className="w-8 h-8 bg-green-100 group-data-[state=active]:bg-green-600 rounded-lg flex items-center justify-center transition-colors">
+                  <Users className="w-4 h-4 text-green-600 group-data-[state=active]:text-white" />
+                </div>
+                <span className="group-data-[state=active]:text-green-600">Add Teacher</span>
+              </TabsTrigger>
+              
+              <TabsTrigger 
+                value="add-employee" 
+                className="group flex flex-col items-center gap-2 py-3 px-4 text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:border-blue-200 rounded-xl transition-all duration-300 hover:bg-white/50"
+              >
+                <div className="w-8 h-8 bg-purple-100 group-data-[state=active]:bg-purple-600 rounded-lg flex items-center justify-center transition-colors">
+                  <Users className="w-4 h-4 text-purple-600 group-data-[state=active]:text-white" />
+                </div>
+                <span className="group-data-[state=active]:text-purple-600">Add Employee</span>
+              </TabsTrigger>
+              
+              <TabsTrigger 
+                value="time" 
+                className="group flex flex-col items-center gap-2 py-3 px-4 text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:border-blue-200 rounded-xl transition-all duration-300 hover:bg-white/50"
+              >
+                <div className="w-8 h-8 bg-orange-100 group-data-[state=active]:bg-orange-600 rounded-lg flex items-center justify-center transition-colors">
+                  <Clock className="w-4 h-4 text-orange-600 group-data-[state=active]:text-white" />
+                </div>
+                <span className="group-data-[state=active]:text-orange-600">Monitor Time</span>
+              </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="directory" className="space-y-4">
-              <AdminTeacherDirectory />
+            {/* Enhanced Tab Content */}
+            <TabsContent value="directory" className="space-y-6 mt-8">
+              <div className="bg-white rounded-2xl p-6 border border-blue-100 shadow-lg">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                    <Users className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900">Staff Directory</h3>
+                    <p className="text-sm text-slate-600">View and manage all registered staff members</p>
+                  </div>
+                </div>
+                <AdminTeacherDirectory />
+              </div>
             </TabsContent>
 
-            <TabsContent value="add-teacher" className="space-y-4">
-              <AdminTeacherForm />
+            <TabsContent value="add-teacher" className="space-y-6 mt-8">
+              <div className="bg-white rounded-2xl p-6 border border-green-100 shadow-lg">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                    <Users className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900">Add New Teacher</h3>
+                    <p className="text-sm text-slate-600">Register a new teacher in the system</p>
+                  </div>
+                </div>
+                <AdminTeacherForm />
+              </div>
             </TabsContent>
 
-            <TabsContent value="add-employee" className="space-y-4">
-              <AdminEmployeeForm />
+            <TabsContent value="add-employee" className="space-y-6 mt-8">
+              <div className="bg-white rounded-2xl p-6 border border-purple-100 shadow-lg">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                    <Users className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900">Add New Employee</h3>
+                    <p className="text-sm text-slate-600">Register a new employee in the system</p>
+                  </div>
+                </div>
+                <AdminEmployeeForm />
+              </div>
             </TabsContent>
 
-            <TabsContent value="time" className="space-y-4">
-              <AdminTeachersList />
+            <TabsContent value="time" className="space-y-6 mt-8">
+              <div className="bg-white rounded-2xl p-6 border border-orange-100 shadow-lg">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+                    <Clock className="w-5 h-5 text-orange-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900">Time Monitoring</h3>
+                    <p className="text-sm text-slate-600">Track attendance and working hours</p>
+                  </div>
+                </div>
+                <AdminTeachersList />
+              </div>
             </TabsContent>
           </Tabs>
         </div>
