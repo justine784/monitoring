@@ -112,118 +112,240 @@ export default function TeacherDashboard() {
         </div>
 
         {/* Header */}
-        <header className="relative bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg backdrop-blur-sm sticky top-0 z-50 border-b border-blue-700">
+        <header className="relative bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg backdrop-blur-sm sticky top-0 z-50 border-b border-blue-700 overflow-visible">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center justify-between gap-4">
+              {/* Left side - Profile on mobile, Logo/Desktop info on desktop */}
               <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/30">
-                    <Users className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
+                {/* Profile Icon - Visible on mobile (left side) */}
+                <div className="sm:hidden">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className="group flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-2 py-2 backdrop-blur-sm hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl min-w-[44px] min-h-[44px]"
+                      >
+                        <div className="relative flex-shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-lime-400 to-emerald-500 flex items-center justify-center text-white text-xs font-bold shadow-lg ring-2 ring-white/30 group-hover:ring-4 group-hover:ring-white/50 transition-all">
+                            {user.name?.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
+                        </div>
+                        <ChevronDown className="w-4 h-4 text-blue-200 group-hover:text-white transition-colors flex-shrink-0" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent 
+                      align="start" 
+                      className="w-72 max-w-[calc(100vw-2rem)] rounded-2xl shadow-2xl border border-blue-200 bg-white overflow-visible z-[60]" 
+                      sideOffset={8} 
+                      side="bottom" 
+                      alignOffset={0}
+                      collisionPadding={{ right: 16, left: 16, top: 8, bottom: 8 }}
+                    >
+                      <DropdownMenuLabel className="p-0">
+                        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-4 text-white">
+                          <div className="flex items-center gap-3">
+                            <div className="relative">
+                              <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-lg font-bold border-2 border-white/30">
+                                {user.name?.charAt(0).toUpperCase()}
+                              </div>
+                              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-semibold text-white text-base truncate">{user.name}</div>
+                              <div className="text-blue-100 text-sm font-medium truncate">
+                                Teacher ID: {user.schoolId}
+                              </div>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-400/20 text-green-100 border border-green-400/30">
+                                  Active
+                                </span>
+                                <span className="text-blue-200 text-xs">Online</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator className="bg-blue-100" />
+                      <div className="p-2 space-y-1">
+                        <DropdownMenuItem className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
+                          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <Users className="w-4 h-4 text-blue-600" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-sm font-medium text-slate-900">Profile</div>
+                            <div className="text-xs text-slate-500">View your profile</div>
+                          </div>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
+                          <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <Settings className="w-4 h-4 text-purple-600" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-sm font-medium text-slate-900">Settings</div>
+                            <div className="text-xs text-slate-500">Account preferences</div>
+                          </div>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
+                          <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                            <HelpCircle className="w-4 h-4 text-emerald-600" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-sm font-medium text-slate-900">Help & Support</div>
+                            <div className="text-xs text-slate-500">Get assistance</div>
+                          </div>
+                        </DropdownMenuItem>
+                      </div>
+                      <DropdownMenuSeparator className="bg-blue-100" />
+                      <DropdownMenuItem
+                        className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-red-50 cursor-pointer transition-colors group border-t border-red-100"
+                        onClick={handleLogout}
+                      >
+                        <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-200 transition-colors">
+                          <LogOut className="w-4 h-4 text-red-600" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-red-600 group-hover:text-red-700">Logout</div>
+                          <div className="text-xs text-red-500">Sign out from account</div>
+                        </div>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-bold text-white">Teacher Dashboard</h1>
-                  <p className="text-xs sm:text-sm text-blue-100 mt-1 font-medium">
-                    Welcome back, {user.name}! 👋 Manage your class efficiently
-                  </p>
+
+                {/* Logo and Title - Hidden on mobile, visible on desktop */}
+                <div className="hidden sm:flex items-center gap-4">
+                  <div className="relative">
+                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/30">
+                      <Users className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
+                  </div>
+                  <div>
+                    <h1 className="text-xl sm:text-2xl font-bold text-white">Teacher Dashboard</h1>
+                    <p className="text-xs sm:text-sm text-blue-100 mt-1 font-medium">
+                      Welcome back, {user.name}! 👋 Manage your class efficiently
+                    </p>
+                  </div>
                 </div>
               </div>
+
+              {/* Right side - Settings on mobile, Profile on desktop */}
               <div className="flex items-center gap-2 sm:gap-3">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      type="button"
-                      className="group flex items-center gap-2 sm:gap-3 rounded-full border border-white/20 bg-white/10 px-3 sm:px-4 py-2 backdrop-blur-sm hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl"
-                    >
-                      <div className="relative">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-lime-400 to-emerald-500 flex items-center justify-center text-white text-sm font-bold shadow-lg ring-2 ring-white/30 group-hover:ring-4 group-hover:ring-white/50 transition-all">
-                          {user.name?.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
-                      </div>
-                      <div className="hidden sm:flex flex-col items-start">
-                        <span className="text-sm font-semibold text-white truncate max-w-[140px] group-hover:text-blue-100 transition-colors">
-                          {user.name}
-                        </span>
-                        <span className="text-xs text-blue-100 font-medium truncate max-w-[140px] flex items-center gap-1">
-                          <span className="opacity-75">ID:</span>
-                          {user.schoolId}
-                        </span>
-                      </div>
-                      <ChevronDown className="w-4 h-4 text-blue-200 group-hover:text-white transition-colors" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-72 rounded-2xl shadow-2xl border border-blue-200 bg-white overflow-hidden">
-                    <DropdownMenuLabel className="p-0">
-                      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-4 text-white">
-                        <div className="flex items-center gap-3">
-                          <div className="relative">
-                            <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-lg font-bold border-2 border-white/30">
-                              {user.name?.charAt(0).toUpperCase()}
-                            </div>
-                            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></div>
+                {/* Settings Button - Visible on mobile */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="sm:hidden bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-sm p-2 rounded-lg"
+                  onClick={() => router.push('/settings')}
+                >
+                  <Settings className="w-5 h-5" />
+                </Button>
+                
+                {/* Profile Dropdown - Visible on desktop only */}
+                <div className="hidden sm:block">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className="group flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-sm hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl"
+                      >
+                        <div className="relative flex-shrink-0">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-lime-400 to-emerald-500 flex items-center justify-center text-white text-sm font-bold shadow-lg ring-2 ring-white/30 group-hover:ring-4 group-hover:ring-white/50 transition-all">
+                            {user.name?.charAt(0).toUpperCase()}
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-white text-base truncate">{user.name}</div>
-                            <div className="text-blue-100 text-sm font-medium truncate">
-                              Teacher ID: {user.schoolId}
+                          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
+                        </div>
+                        <div className="flex flex-col items-start">
+                          <span className="text-sm font-semibold text-white truncate max-w-[140px] group-hover:text-blue-100 transition-colors">
+                            {user.name}
+                          </span>
+                          <span className="text-xs text-blue-100 font-medium truncate max-w-[140px] flex items-center gap-1">
+                            <span className="opacity-75">ID:</span>
+                            {user.schoolId}
+                          </span>
+                        </div>
+                        <ChevronDown className="w-4 h-4 text-blue-200 group-hover:text-white transition-colors flex-shrink-0" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent 
+                      align="end" 
+                      className="w-72 max-w-[calc(100vw-2rem)] rounded-2xl shadow-2xl border border-blue-200 bg-white overflow-visible z-[60]" 
+                      sideOffset={8} 
+                      side="bottom" 
+                      alignOffset={0}
+                      collisionPadding={{ right: 16, left: 16, top: 8, bottom: 8 }}
+                    >
+                      <DropdownMenuLabel className="p-0">
+                        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-4 text-white">
+                          <div className="flex items-center gap-3">
+                            <div className="relative">
+                              <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-lg font-bold border-2 border-white/30">
+                                {user.name?.charAt(0).toUpperCase()}
+                              </div>
+                              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></div>
                             </div>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-400/20 text-green-100 border border-green-400/30">
-                                Active
-                              </span>
-                              <span className="text-blue-200 text-xs">Online</span>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-semibold text-white text-base truncate">{user.name}</div>
+                              <div className="text-blue-100 text-sm font-medium truncate">
+                                Teacher ID: {user.schoolId}
+                              </div>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-400/20 text-green-100 border border-green-400/30">
+                                  Active
+                                </span>
+                                <span className="text-blue-200 text-xs">Online</span>
+                              </div>
                             </div>
                           </div>
                         </div>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator className="bg-blue-100" />
+                      <div className="p-2 space-y-1">
+                        <DropdownMenuItem className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
+                          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <Users className="w-4 h-4 text-blue-600" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-sm font-medium text-slate-900">Profile</div>
+                            <div className="text-xs text-slate-500">View your profile</div>
+                          </div>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
+                          <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <Settings className="w-4 h-4 text-purple-600" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-sm font-medium text-slate-900">Settings</div>
+                            <div className="text-xs text-slate-500">Account preferences</div>
+                          </div>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
+                          <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                            <HelpCircle className="w-4 h-4 text-emerald-600" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-sm font-medium text-slate-900">Help & Support</div>
+                            <div className="text-xs text-slate-500">Get assistance</div>
+                          </div>
+                        </DropdownMenuItem>
                       </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-blue-100" />
-                    <div className="p-2 space-y-1">
-                      <DropdownMenuItem className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
-                        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                          <Users className="w-4 h-4 text-blue-600" />
+                      <DropdownMenuSeparator className="bg-blue-100" />
+                      <DropdownMenuItem
+                        className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-red-50 cursor-pointer transition-colors group border-t border-red-100"
+                        onClick={handleLogout}
+                      >
+                        <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-200 transition-colors">
+                          <LogOut className="w-4 h-4 text-red-600" />
                         </div>
                         <div className="flex-1">
-                          <div className="text-sm font-medium text-slate-900">Profile</div>
-                          <div className="text-xs text-slate-500">View your profile</div>
+                          <div className="text-sm font-medium text-red-600 group-hover:text-red-700">Logout</div>
+                          <div className="text-xs text-red-500">Sign out from account</div>
                         </div>
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
-                        <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                          <Settings className="w-4 h-4 text-purple-600" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="text-sm font-medium text-slate-900">Settings</div>
-                          <div className="text-xs text-slate-500">Account preferences</div>
-                        </div>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
-                        <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
-                          <HelpCircle className="w-4 h-4 text-emerald-600" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="text-sm font-medium text-slate-900">Help & Support</div>
-                          <div className="text-xs text-slate-500">Get assistance</div>
-                        </div>
-                      </DropdownMenuItem>
-                    </div>
-                    <DropdownMenuSeparator className="bg-blue-100" />
-                    <DropdownMenuItem
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 cursor-pointer transition-colors group"
-                      onClick={handleLogout}
-                    >
-                      <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-200 transition-colors">
-                        <LogOut className="w-4 h-4 text-red-600" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-sm font-medium text-red-600 group-hover:text-red-700">Logout</div>
-                        <div className="text-xs text-red-500">Sign out from account</div>
-                      </div>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
             </div>
           </div>
