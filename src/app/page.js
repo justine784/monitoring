@@ -795,7 +795,7 @@ export default function Home() {
                       onClick={() => setActiveView('teachers')}
                       className="border-blue-200 text-blue-600 hover:bg-blue-50 font-medium py-3 px-8 rounded-lg transition-colors"
                     >
-                      Browse Teachers/Employee
+                      Browse Teachers
                     </Button>
                   </div>
                 </div>
