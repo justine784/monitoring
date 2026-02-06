@@ -5,7 +5,7 @@ import { collection, getDocs, query, orderBy, doc, updateDoc, deleteDoc, serverT
 import { firebaseDb } from '@/lib/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Search, Edit, Trash2, Save, X, Briefcase, GraduationCap, UserCheck, Clock } from 'lucide-react';
+import { Users, Search, Edit, Trash2, Save, X, Briefcase, GraduationCap, UserCheck, Clock, Download, FileText } from 'lucide-react';
 
 export default function AdminTeacherDirectory() {
   const [teachers, setTeachers] = useState([]);
@@ -33,6 +33,89 @@ export default function AdminTeacherDirectory() {
 
     loadTeachers();
   }, []);
+
+  const exportToPDF = () => {
+    const filteredStaff = teachers.filter((t) => {
+      const term = search.toLowerCase();
+      const matchesSearch = !search.trim() || 
+        (t.name?.toLowerCase().includes(term) ||
+         t.schoolId?.toLowerCase().includes(term) ||
+         t.role?.toLowerCase().includes(term) ||
+         t.position?.toLowerCase().includes(term));
+      
+      const matchesRole = roleFilter === 'all' || t.role?.toLowerCase() === roleFilter.toLowerCase();
+      return matchesSearch && matchesRole;
+    });
+
+    const printWindow = window.open('', '_blank');
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Staff Directory Report - ${new Date().toLocaleDateString()}</title>
+        <style>
+          @page { size: A4; margin: 15mm; }
+          body { font-family: 'Segoe UI', sans-serif; color: #1f2937; line-height: 1.5; }
+          .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #3b82f6; padding-bottom: 20px; }
+          .logo { width: 60px; height: 60px; margin-bottom: 10px; }
+          h1 { margin: 0; color: #111827; font-size: 24px; }
+          h2 { margin: 5px 0; color: #4b5563; font-size: 18px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th { background-color: #f3f4f6; color: #374151; font-weight: 600; text-align: left; padding: 12px; border: 1px solid #e5e7eb; font-size: 12px; text-transform: uppercase; }
+          td { padding: 10px 12px; border: 1px solid #e5e7eb; font-size: 12px; }
+          tr:nth-child(even) { background-color: #f9fafb; }
+          .role-badge { display: inline-block; padding: 2px 8px; rounded: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
+          .role-teacher { background: #e0e7ff; color: #4338ca; }
+          .role-employee { background: #fef3c7; color: #92400e; }
+          .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 10px; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <img src="/logo.jpg" class="logo" alt="MSU Logo" />
+          <h1>Mindoro State University</h1>
+          <h2>Staff Directory Report</h2>
+          <p>Generated on ${new Date().toLocaleString()}</p>
+          <p>Filter: ${roleFilter.toUpperCase()} | Total Staff: ${filteredStaff.length}</p>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>School ID</th>
+              <th>Role</th>
+              <th>Position</th>
+              <th>Employment Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredStaff.map(t => `
+              <tr>
+                <td><strong>${t.name || 'N/A'}</strong></td>
+                <td>${t.schoolId || 'N/A'}</td>
+                <td><span class="role-badge role-${t.role?.toLowerCase()}">${t.role || 'N/A'}</span></td>
+                <td>${t.position || 'N/A'}</td>
+                <td>${t.employmentType || 'N/A'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        <div class="footer">
+          <p>© 2026 Mindoro State University - Official Staff Record</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 500);
+    };
+  };
   const startEdit = (teacher) => {
     setEditingId(teacher.id);
     setEditForm({
@@ -117,6 +200,16 @@ export default function AdminTeacherDirectory() {
               <option value="employee">Employees</option>
               <option value="other">Others</option>
             </select>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={exportToPDF}
+              className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-0 shadow-md h-10 px-4 rounded-xl"
+            >
+              <FileText className="w-4 h-4" />
+              Export PDF
+            </Button>
           </div>
         </div>
       </div>

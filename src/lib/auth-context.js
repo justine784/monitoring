@@ -156,7 +156,6 @@ export function AuthProvider({ children }) {
     if (!snap.exists()) {
       // Auto-create a simple profile so first-time login does not crash.
       // If admin already added this teacher in the admin dashboard, use that name.
-      let name = role === 'teacher' ? 'Teacher' : 'Employee';
       const teacherName = await getTeacherName();
       if (teacherName) {
         name = teacherName;
@@ -186,6 +185,10 @@ export function AuthProvider({ children }) {
 
     let data = snap.data();
 
+    // Use the actual name from the user's profile document
+    // Don't use teacher collection fallback for employees
+    const userName = data.name;
+
     // If teacher profile exists in teachers collection, prefer that name
     if (role === 'teacher') {
       const teacherName = await getTeacherName();
@@ -212,7 +215,7 @@ export function AuthProvider({ children }) {
 
     const newUser = {
       uid: normalizedId,
-      name: data.name || (role === 'teacher' ? 'Teacher' : 'Employee'),
+      name: userName || data.name,
       schoolId: normalizedId,
       role: data.role,
     };

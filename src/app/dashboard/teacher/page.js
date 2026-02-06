@@ -6,7 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import TeacherClock from '@/components/teacher/teacher-clock';
 import TeacherLocation from '@/components/teacher/teacher-location';
-import { LogOut, Clock, BookOpen, MapPin, Users, TrendingUp, ChevronDown, Settings, HelpCircle } from 'lucide-react';
+import TeacherTimeSummary from '@/components/teacher/teacher-time-summary';
+import TeacherTimeList from '@/components/teacher/teacher-time-list';
+import IncidentReport from '@/components/shared/incident-report';
+import { LogOut, Clock, MapPin, Users, ChevronDown, Settings, HelpCircle, TrendingUp, Menu, X, Calendar, AlertTriangle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
   DropdownMenu,
@@ -20,16 +23,18 @@ import {
 export default function TeacherDashboard() {
   const { user, logout, initialising } = useAuth();
   const router = useRouter();
+  const [activeSection, setActiveSection] = useState('time-tracking');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   
-  // Add error boundary fallback - MUST be called before any early returns
-  const [hasError, setHasError] = useState(false);
-
   // Add authentication check effect
   useEffect(() => {
     if (!initialising && (!user || user.role !== 'teacher')) {
       router.push('/login');
     }
   }, [user, initialising, router]);
+
+  // Add error boundary fallback - MUST be called before any early returns
+  const [hasError, setHasError] = useState(false);
 
   if (initialising) {
     return (
@@ -79,6 +84,21 @@ export default function TeacherDashboard() {
     }
   };
 
+  const handleProfile = () => {
+    // Navigate to profile page or show profile modal
+    router.push('/profile');
+  };
+
+  const handleSettings = () => {
+    // Navigate to settings page
+    router.push('/settings');
+  };
+
+  const handleHelpSupport = () => {
+    // Navigate to help page or open help modal
+    router.push('/help');
+  };
+
   if (hasError) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
@@ -115,134 +135,35 @@ export default function TeacherDashboard() {
         <header className="relative bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg backdrop-blur-sm sticky top-0 z-50 border-b border-blue-700 overflow-visible">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between gap-4">
-              {/* Left side - Profile on mobile, Logo/Desktop info on desktop */}
+              {/* Left side - Menu toggle and Logo */}
               <div className="flex items-center gap-4">
-                {/* Profile Icon - Visible on mobile (left side) */}
-                <div className="sm:hidden">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        type="button"
-                        className="group flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-2 py-2 backdrop-blur-sm hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl min-w-[44px] min-h-[44px]"
-                      >
-                        <div className="relative flex-shrink-0">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-lime-400 to-emerald-500 flex items-center justify-center text-white text-xs font-bold shadow-lg ring-2 ring-white/30 group-hover:ring-4 group-hover:ring-white/50 transition-all">
-                            {user.name?.charAt(0).toUpperCase()}
-                          </div>
-                          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
-                        </div>
-                        <ChevronDown className="w-4 h-4 text-blue-200 group-hover:text-white transition-colors flex-shrink-0" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent 
-                      align="start" 
-                      className="w-72 max-w-[calc(100vw-2rem)] rounded-2xl shadow-2xl border border-blue-200 bg-white overflow-visible z-[60]" 
-                      sideOffset={8} 
-                      side="bottom" 
-                      alignOffset={0}
-                      collisionPadding={{ right: 16, left: 16, top: 8, bottom: 8 }}
-                    >
-                      <DropdownMenuLabel className="p-0">
-                        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-4 text-white">
-                          <div className="flex items-center gap-3">
-                            <div className="relative">
-                              <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-lg font-bold border-2 border-white/30">
-                                {user.name?.charAt(0).toUpperCase()}
-                              </div>
-                              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></div>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="font-semibold text-white text-base truncate">{user.name}</div>
-                              <div className="text-blue-100 text-sm font-medium truncate">
-                                Teacher ID: {user.schoolId}
-                              </div>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-400/20 text-green-100 border border-green-400/30">
-                                  Active
-                                </span>
-                                <span className="text-blue-200 text-xs">Online</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator className="bg-blue-100" />
-                      <div className="p-2 space-y-1">
-                        <DropdownMenuItem className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
-                          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <Users className="w-4 h-4 text-blue-600" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-sm font-medium text-slate-900">Profile</div>
-                            <div className="text-xs text-slate-500">View your profile</div>
-                          </div>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
-                          <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                            <Settings className="w-4 h-4 text-purple-600" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-sm font-medium text-slate-900">Settings</div>
-                            <div className="text-xs text-slate-500">Account preferences</div>
-                          </div>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
-                          <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
-                            <HelpCircle className="w-4 h-4 text-emerald-600" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-sm font-medium text-slate-900">Help & Support</div>
-                            <div className="text-xs text-slate-500">Get assistance</div>
-                          </div>
-                        </DropdownMenuItem>
-                      </div>
-                      <DropdownMenuSeparator className="bg-blue-100" />
-                      <DropdownMenuItem
-                        className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-red-50 cursor-pointer transition-colors group border-t border-red-100"
-                        onClick={handleLogout}
-                      >
-                        <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-200 transition-colors">
-                          <LogOut className="w-4 h-4 text-red-600" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="text-sm font-medium text-red-600 group-hover:text-red-700">Logout</div>
-                          <div className="text-xs text-red-500">Sign out from account</div>
-                        </div>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-
-                {/* Logo and Title - Hidden on mobile, visible on desktop */}
-                <div className="hidden sm:flex items-center gap-4">
+                {/* Menu Toggle Button */}
+                <button
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="lg:hidden p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                >
+                  {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                </button>
+                
+                {/* Logo and Title */}
+                <div className="flex items-center gap-4">
                   <div className="relative">
-                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/30">
-                      <Users className="w-6 h-6 text-white" />
+                    <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/30">
+                      <Users className="w-5 h-5 text-white" />
                     </div>
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
+                    <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
                   </div>
                   <div>
                     <h1 className="text-xl sm:text-2xl font-bold text-white">Teacher Dashboard</h1>
                     <p className="text-xs sm:text-sm text-blue-100 mt-1 font-medium">
-                      Welcome back, {user.name}! 👋 Manage your class efficiently
+                      Welcome back, {user.name}!
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Right side - Settings on mobile, Profile on desktop */}
+              {/* Right side - Profile Dropdown */}
               <div className="flex items-center gap-2 sm:gap-3">
-                {/* Settings Button - Visible on mobile */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="sm:hidden bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-sm p-2 rounded-lg"
-                  onClick={() => router.push('/settings')}
-                >
-                  <Settings className="w-5 h-5" />
-                </Button>
-                
-                {/* Profile Dropdown - Visible on desktop only */}
                 <div className="hidden sm:block">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -251,7 +172,7 @@ export default function TeacherDashboard() {
                         className="group flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-sm hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl"
                       >
                         <div className="relative flex-shrink-0">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-lime-400 to-emerald-500 flex items-center justify-center text-white text-sm font-bold shadow-lg ring-2 ring-white/30 group-hover:ring-4 group-hover:ring-white/50 transition-all">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-lime-400 to-emerald-500 flex items-center justify-center text-white text-sm font-bold shadow-lg ring-2 ring-white/30 group-hover:ring-4 group-hover:ring-white/50 transition-all">
                             {user.name?.charAt(0).toUpperCase()}
                           </div>
                           <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
@@ -302,7 +223,10 @@ export default function TeacherDashboard() {
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator className="bg-blue-100" />
                       <div className="p-2 space-y-1">
-                        <DropdownMenuItem className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
+                        <DropdownMenuItem 
+                          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors"
+                          onClick={handleProfile}
+                        >
                           <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
                             <Users className="w-4 h-4 text-blue-600" />
                           </div>
@@ -311,7 +235,10 @@ export default function TeacherDashboard() {
                             <div className="text-xs text-slate-500">View your profile</div>
                           </div>
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
+                        <DropdownMenuItem 
+                          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors"
+                          onClick={handleSettings}
+                        >
                           <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
                             <Settings className="w-4 h-4 text-purple-600" />
                           </div>
@@ -320,7 +247,10 @@ export default function TeacherDashboard() {
                             <div className="text-xs text-slate-500">Account preferences</div>
                           </div>
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
+                        <DropdownMenuItem 
+                          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors"
+                          onClick={handleHelpSupport}
+                        >
                           <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
                             <HelpCircle className="w-4 h-4 text-emerald-600" />
                           </div>
@@ -351,104 +281,198 @@ export default function TeacherDashboard() {
           </div>
         </header>
 
-        {/* Main Content */}
-        <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
-          {/* Welcome Section */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 sm:p-8 border border-blue-100 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
-                  Ready to teach today? 📚
-                </h2>
-                <p className="text-slate-600 text-sm sm:text-base">
-                  Track your class attendance, manage your schedule, and monitor student activities.
-                </p>
+        {/* Main Content with Sidebar */}
+        <div className="flex h-[calc(100vh-80px)]">
+          {/* Sidebar */}
+          <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 shadow-xl transition-transform duration-300 ease-in-out`}>
+            <div className="h-full flex flex-col">
+              <div className="p-4 border-b border-slate-200">
+                <h2 className="text-lg font-semibold text-slate-900">Navigation</h2>
               </div>
-              <div className="hidden sm:block">
-                <div className="text-5xl">🎓</div>
-              </div>
-            </div>
-          </div>
+              
+              <nav className="flex-1 p-4 space-y-2">
+                <button
+                  onClick={() => setActiveSection('time-tracking')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    activeSection === 'time-tracking' 
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                      : 'hover:bg-slate-50 text-slate-700'
+                  }`}
+                >
+                  <Clock className="w-5 h-5" />
+                  <span className="font-medium">Time Tracking</span>
+                </button>
+                
+                <button
+                  onClick={() => setActiveSection('location-tracking')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    activeSection === 'location-tracking' 
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                      : 'hover:bg-slate-50 text-slate-700'
+                  }`}
+                >
+                  <MapPin className="w-5 h-5" />
+                  <span className="font-medium">Location Tracking</span>
+                </button>
+                
+                <button
+                  onClick={() => setActiveSection('time-summary')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    activeSection === 'time-summary' 
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                      : 'hover:bg-slate-50 text-slate-700'
+                  }`}
+                >
+                  <TrendingUp className="w-5 h-5" />
+                  <span className="font-medium">Time Summary</span>
+                </button>
+                
+                <button
+                  onClick={() => setActiveSection('time-list')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    activeSection === 'time-list' 
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                      : 'hover:bg-slate-50 text-slate-700'
+                  }`}
+                >
+                  <Calendar className="w-5 h-5" />
+                  <span className="font-medium">Time List</span>
+                </button>
 
-          {/* Quick Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-            <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 group">
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Users className="w-6 h-6 text-blue-600" />
-                </div>
-                <TrendingUp className="w-4 h-4 text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-600 mb-1">Total Students</p>
-                <p className="text-2xl font-bold text-slate-900">5</p>
-                <p className="text-xs text-blue-600 mt-1">Class 10-A</p>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 group">
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <BookOpen className="w-6 h-6 text-emerald-600" />
-                </div>
-                <TrendingUp className="w-4 h-4 text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-600 mb-1">Present Today</p>
-                <p className="text-2xl font-bold text-emerald-600">3</p>
-                <p className="text-xs text-emerald-600 mt-1">60% attendance</p>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 group">
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Clock className="w-6 h-6 text-purple-600" />
-                </div>
-                <TrendingUp className="w-4 h-4 text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-600 mb-1">Logbook Entries</p>
-                <p className="text-2xl font-bold text-purple-600">5</p>
-                <p className="text-xs text-purple-600 mt-1">This week</p>
-              </div>
-            </div>
-          </div>
+                <button
+                  onClick={() => setActiveSection('incident-reporting')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    activeSection === 'incident-reporting' 
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                      : 'hover:bg-slate-50 text-slate-700'
+                  }`}
+                >
+                  <AlertTriangle className="w-5 h-5" />
+                  <span className="font-medium">Incident Reporting</span>
+                </button>
+              </nav>
 
-          {/* Main Tools */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Clock Section */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-lg backdrop-blur-sm">
-              <div className="flex items-center gap-2 mb-6">
-                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Clock className="w-4 h-4 text-blue-600" />
+              <div className="p-4 border-t border-slate-200">
+                <div className="text-xs text-slate-500">
+                  <p>MSU Monitoring System</p>
+                  <p className="mt-1">© 2024 All rights reserved</p>
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900">Time Tracking</h3>
-              </div>
-              <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                <TeacherClock teacherId={user.schoolId} />
               </div>
             </div>
+          </aside>
 
-            {/* Location Section */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-lg backdrop-blur-sm">
-              <div className="flex items-center gap-2 mb-6">
-                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <MapPin className="w-4 h-4 text-purple-600" />
+          {/* Overlay for mobile */}
+          {sidebarOpen && (
+            <div 
+              className="lg:hidden fixed inset-0 bg-black/50 z-30"
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
+
+          {/* Main Content Area */}
+          <main className="flex-1 overflow-y-auto">
+            <div className="p-6">
+              {/* Welcome Section */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 sm:p-8 border border-blue-100 shadow-sm mb-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
+                      Ready to teach today? 📚
+                    </h2>
+                  </div>
+                  <div className="hidden sm:block">
+                    <div className="text-5xl">🎓</div>
+                  </div>
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900">Location Tracking</h3>
               </div>
-              <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                <TeacherLocation />
+
+              {/* Dynamic Content Based on Active Section */}
+              <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-lg backdrop-blur-sm">
+                {activeSection === 'time-tracking' && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-6">
+                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <Clock className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-slate-900">Time Tracking</h3>
+                    </div>
+                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                      <TeacherClock teacherId={user.schoolId} />
+                    </div>
+                  </div>
+                )}
+
+                {activeSection === 'location-tracking' && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-6">
+                      <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <MapPin className="w-4 h-4 text-purple-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-slate-900">Location Tracking</h3>
+                    </div>
+                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                      <TeacherLocation />
+                    </div>
+                  </div>
+                )}
+
+                {activeSection === 'time-summary' && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-6">
+                      <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <TrendingUp className="w-4 h-4 text-orange-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-slate-900">Time Summary</h3>
+                    </div>
+                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                      <TeacherTimeSummary teacherId={user.schoolId} />
+                    </div>
+                  </div>
+                )}
+
+                {activeSection === 'time-list' && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-6">
+                      <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                        <Calendar className="w-4 h-4 text-indigo-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-slate-900">Time List</h3>
+                    </div>
+                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                      <TeacherTimeList teacherId={user.schoolId} />
+                    </div>
+                  </div>
+                )}
+
+                {activeSection === 'incident-reporting' && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-6">
+                      <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                        <AlertTriangle className="w-4 h-4 text-red-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-slate-900">Incident Reporting</h3>
+                    </div>
+                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                      <IncidentReport />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-        </main>
+          </main>
+        </div>
       </div>
     );
   } catch (error) {
     console.error('Teacher dashboard rendering error:', error);
-    setHasError(true);
+    
+    // On critical errors (like auth issues), redirect to login
+    // On rendering errors, show error state but allow refresh
+    if (error.message && error.message.includes('Authentication')) {
+      router.push('/login');
+    } else {
+      setHasError(true);
+    }
     return null;
   }
 }

@@ -5,11 +5,14 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import AdminTeachersList from '@/components/admin/admin-teachers-list';
+import AdminTeacherDirectory from '@/components/admin/admin-teacher-directory';
 import AdminTeacherForm from '@/components/admin/admin-teacher-form';
 import AdminEmployeeForm from '@/components/admin/admin-employee-form';
-import AdminTeacherDirectory from '@/components/admin/admin-teacher-directory';
-import { LogOut, Settings, Users, UserCheck, Clock, TrendingUp } from 'lucide-react';
+import AdminTeachersList from '@/components/admin/admin-teachers-list';
+import AdminTimeRecords from '@/components/admin/admin-time-records';
+import AdminIncidentList from '@/components/admin/admin-incident-list';
+import AdminUserManagement from '@/components/admin/admin-user-management';
+import { LogOut, Settings, Users, UserCheck, Clock, TrendingUp, AlertTriangle, Menu, X, GraduationCap, Calendar, BarChart3, Shield } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { firebaseDb } from '@/lib/firebase';
@@ -26,6 +29,8 @@ export default function AdminDashboard() {
   const { user, logout, initialising } = useAuth();
   const router = useRouter();
   const [adminTheme, setAdminTheme] = useState('light');
+  const [activeSection, setActiveSection] = useState('directory');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [stats, setStats] = useState({
     totalTeachers: 0,
     totalEmployees: 0,
@@ -144,295 +149,177 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div
-      className={
-        isDark
-          ? 'min-h-screen bg-slate-950 text-slate-50'
-          : 'min-h-screen admin-animated-bg'
-      }
-    >
-      {/* overlay to keep content readable over animated bg */}
-      <div
-        className={
-          isDark
-            ? 'fixed inset-0 bg-slate-950/90 pointer-events-none'
-            : 'fixed inset-0 bg-white/80 backdrop-blur-sm pointer-events-none'
-        }
-      />
-
+    <div className={isDark ? 'min-h-screen bg-slate-950 text-slate-50' : 'min-h-screen bg-slate-50'}>
       {/* Header */}
       <header className="relative bg-gradient-to-r from-slate-900 to-slate-800 text-white shadow-lg backdrop-blur-sm sticky top-0 z-50 border-b border-slate-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="lg:hidden p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+              >
+                {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
               <div className="relative">
                 <img
                   src="/logo.jpg"
                   alt="School logo"
-                  className="h-12 w-12 rounded-full border-2 border-white/20 object-cover shadow-lg"
+                  className="h-10 w-10 rounded-full border-2 border-white/20 object-cover shadow-lg"
                 />
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
               </div>
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-white">Mindoro State University</h1>
-                <p className="text-xs sm:text-sm text-slate-300 mt-1 font-medium">
-                  Admin Dashboard - Monitor teachers and Employees
-                </p>
-              </div>
+              <h1 className="text-lg sm:text-xl font-bold text-white hidden sm:block">Mindoro State University</h1>
+              <h1 className="text-lg font-bold text-white sm:hidden">MINSU</h1>
             </div>
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                className="flex items-center gap-2 bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/30 transition-all duration-200"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
                 onClick={() => router.push('/settings')}
               >
                 <Settings className="w-4 h-4" />
-                <span className="hidden sm:inline">Settings</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleLogout}
-                className="flex items-center gap-2 bg-red-500/20 border-red-500/30 text-red-200 hover:bg-red-500/30 hover:border-red-500/40 transition-all duration-200"
+                className="bg-red-500/20 border-red-500/30 text-red-200 hover:bg-red-500/30"
               >
                 <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">Logout</span>
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
-        {/* Welcome Section */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 sm:p-8 border border-blue-100 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
-                Welcome back, Admin! 👋
-              </h2>
-              <p className="text-slate-600 text-sm sm:text-base">
-                Here's what's happening with your teachers and employees today.
-              </p>
+      <div className="flex h-[calc(100vh-73px)]">
+        {/* Sidebar */}
+        <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 shadow-xl transition-transform duration-300 ease-in-out flex flex-col`}>
+          <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Navigation</h2>
+          </div>
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+            <button
+              onClick={() => setActiveSection('directory')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeSection === 'directory' ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'text-slate-600 hover:bg-slate-50'}`}
+            >
+              <Users className="w-5 h-5" />
+              <span className="font-semibold text-sm">Directory</span>
+            </button>
+            <button
+              onClick={() => setActiveSection('user-management')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeSection === 'user-management' ? 'bg-slate-600 text-white shadow-lg shadow-slate-200' : 'text-slate-600 hover:bg-slate-50'}`}
+            >
+              <Shield className="w-5 h-5" />
+              <span className="font-semibold text-sm">User Management</span>
+            </button>
+            <button
+              onClick={() => setActiveSection('add-teacher')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeSection === 'add-teacher' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200' : 'text-slate-600 hover:bg-slate-50'}`}
+            >
+              <GraduationCap className="w-5 h-5" />
+              <span className="font-semibold text-sm">Add Teacher</span>
+            </button>
+            <button
+              onClick={() => setActiveSection('add-employee')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeSection === 'add-employee' ? 'bg-purple-600 text-white shadow-lg shadow-purple-200' : 'text-slate-600 hover:bg-slate-50'}`}
+            >
+              <UserCheck className="w-5 h-5" />
+              <span className="font-semibold text-sm">Add Employee</span>
+            </button>
+            <div className="my-4 border-t border-slate-100 pt-4">
+              <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-4 mb-2">Monitoring</h2>
+              <button
+                onClick={() => setActiveSection('time')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeSection === 'time' ? 'bg-orange-600 text-white shadow-lg shadow-orange-200' : 'text-slate-600 hover:bg-slate-50'}`}
+              >
+                <Clock className="w-5 h-5" />
+                <span className="font-semibold text-sm">Monitor Time</span>
+              </button>
+              <button
+                onClick={() => setActiveSection('time-records')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeSection === 'time-records' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'text-slate-600 hover:bg-slate-50'}`}
+              >
+                <Calendar className="w-5 h-5" />
+                <span className="font-semibold text-sm">Time Records</span>
+              </button>
+              <button
+                onClick={() => setActiveSection('incidents')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeSection === 'incidents' ? 'bg-red-600 text-white shadow-lg shadow-red-200' : 'text-slate-600 hover:bg-slate-50'}`}
+              >
+                <AlertTriangle className="w-5 h-5" />
+                <span className="font-semibold text-sm">Incidents</span>
+              </button>
             </div>
-            <div className="hidden sm:block">
-              <div className="text-4xl">📊</div>
+          </nav>
+          <div className="p-4 border-t border-slate-100">
+            <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 text-[10px] text-slate-500">
+              <p className="font-bold text-slate-700 mb-1">MINSU Bongabong</p>
+              <p> 2026 Admin Panel v2.0</p>
             </div>
           </div>
-        </div>
+        </aside>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          <Card className="group hover:shadow-lg transition-all duration-300 border-0 bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="p-3 bg-blue-500 rounded-xl shadow-md">
-                  <Users className="w-6 h-6 text-white" />
-                </div>
-                <TrendingUp className="w-4 h-4 text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-              <CardTitle className="text-sm font-medium text-blue-900 mt-3">
-                Total Teachers
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-blue-900">
-                {statsLoading ? '...' : stats.totalTeachers}
-              </div>
-              <p className="text-xs text-blue-700 mt-1 font-medium">
-                Registered teachers
-              </p>
-            </CardContent>
-          </Card>
+        {/* Overlay for mobile */}
+        {sidebarOpen && (
+          <div className="lg:hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-30" onClick={() => setSidebarOpen(false)} />
+        )}
 
-          <Card className="group hover:shadow-lg transition-all duration-300 border-0 bg-gradient-to-br from-emerald-50 to-emerald-100 hover:from-emerald-100 hover:to-emerald-200">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="p-3 bg-emerald-500 rounded-xl shadow-md">
-                  <UserCheck className="w-6 h-6 text-white" />
-                </div>
-                <TrendingUp className="w-4 h-4 text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-              <CardTitle className="text-sm font-medium text-emerald-900 mt-3">
-                Total Employees
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-emerald-600">
-                {statsLoading ? '...' : stats.totalEmployees}
-              </div>
-              <p className="text-xs text-emerald-700 mt-1 font-medium">
-                Registered employees
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="group hover:shadow-lg transition-all duration-300 border-0 bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="p-3 bg-purple-500 rounded-xl shadow-md">
-                  <Clock className="w-6 h-6 text-white" />
-                </div>
-                <TrendingUp className="w-4 h-4 text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-              <CardTitle className="text-sm font-medium text-purple-900 mt-3">
-                Average Hours
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-purple-600">
-                {statsLoading ? '...' : (stats.avgHours || 0).toFixed(1)}
-              </div>
-              <p className="text-xs text-purple-700 mt-1 font-medium">
-                Hours per day
-              </p>
-            </CardContent>
-          </Card>
-
-        </div>
-
-        {/* Teachers & Employees Management */}
-        <div className="bg-gradient-to-br from-white via-blue-50/30 to-indigo-50/30 rounded-3xl border border-blue-100/50 p-6 sm:p-8 shadow-2xl backdrop-blur-sm space-y-8">
-          {/* Header Section */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-                  <Users className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-slate-900">
-                    Staff Management Center
-                  </h2>
-                  <p className="text-sm text-slate-600">
-                    Manage teachers, employees, and monitor activities
-                  </p>
-                </div>
-              </div>
+        {/* Main Content Area */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-slate-50/50">
+          <div className="max-w-6xl mx-auto space-y-8">
+            {/* Stats Overview */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <Card className="border-0 shadow-sm bg-white overflow-hidden group">
+                <CardContent className="p-6 flex items-center gap-4">
+                  <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                    <Users className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Teachers</p>
+                    <h3 className="text-2xl font-black text-slate-900">{statsLoading ? '...' : stats.totalTeachers}</h3>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-0 shadow-sm bg-white overflow-hidden group">
+                <CardContent className="p-6 flex items-center gap-4">
+                  <div className="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300">
+                    <UserCheck className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Employees</p>
+                    <h3 className="text-2xl font-black text-slate-900">{statsLoading ? '...' : stats.totalEmployees}</h3>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-0 shadow-sm bg-white overflow-hidden group">
+                <CardContent className="p-6 flex items-center gap-4">
+                  <div className="w-12 h-12 bg-orange-100 rounded-2xl flex items-center justify-center text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-all duration-300">
+                    <BarChart3 className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Avg Hours</p>
+                    <h3 className="text-2xl font-black text-slate-900">{statsLoading ? '...' : stats.avgHours}h</h3>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-            
-            {/* Quick Stats */}
-            <div className="flex gap-4">
-              <div className="text-center p-3 bg-blue-50 rounded-xl border border-blue-100">
-                <div className="text-2xl font-bold text-blue-600">{stats.totalTeachers}</div>
-                <div className="text-xs text-blue-600 font-medium">Teachers</div>
-              </div>
-              <div className="text-center p-3 bg-purple-50 rounded-xl border border-purple-100">
-                <div className="text-2xl font-bold text-purple-600">{stats.totalEmployees}</div>
-                <div className="text-xs text-purple-600 font-medium">Employees</div>
-              </div>
+
+            {/* Dynamic Content */}
+            <div className="bg-white rounded-3xl border border-slate-200/60 p-6 sm:p-8 shadow-xl shadow-slate-200/50">
+              {activeSection === 'directory' && <AdminTeacherDirectory />}
+              {activeSection === 'user-management' && <AdminUserManagement />}
+              {activeSection === 'add-teacher' && <AdminTeacherForm />}
+              {activeSection === 'add-employee' && <AdminEmployeeForm />}
+              {activeSection === 'time' && <AdminTeachersList />}
+              {activeSection === 'time-records' && <AdminTimeRecords />}
+              {activeSection === 'incidents' && <AdminIncidentList />}
             </div>
           </div>
-          
-          {/* Enhanced Tabs */}
-          <Tabs defaultValue="directory" className="space-y-8">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-3 p-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-100">
-              <TabsTrigger 
-                value="directory" 
-                className="group flex flex-col items-center gap-2 py-3 px-4 text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:border-blue-200 rounded-xl transition-all duration-300 hover:bg-white/50"
-              >
-                <div className="w-8 h-8 bg-blue-100 group-data-[state=active]:bg-blue-600 rounded-lg flex items-center justify-center transition-colors">
-                  <Users className="w-4 h-4 text-blue-600 group-data-[state=active]:text-white" />
-                </div>
-                <span className="group-data-[state=active]:text-blue-600">Directory</span>
-              </TabsTrigger>
-              
-              <TabsTrigger 
-                value="add-teacher" 
-                className="group flex flex-col items-center gap-2 py-3 px-4 text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:border-blue-200 rounded-xl transition-all duration-300 hover:bg-white/50"
-              >
-                <div className="w-8 h-8 bg-green-100 group-data-[state=active]:bg-green-600 rounded-lg flex items-center justify-center transition-colors">
-                  <Users className="w-4 h-4 text-green-600 group-data-[state=active]:text-white" />
-                </div>
-                <span className="group-data-[state=active]:text-green-600">Add Teacher</span>
-              </TabsTrigger>
-              
-              <TabsTrigger 
-                value="add-employee" 
-                className="group flex flex-col items-center gap-2 py-3 px-4 text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:border-blue-200 rounded-xl transition-all duration-300 hover:bg-white/50"
-              >
-                <div className="w-8 h-8 bg-purple-100 group-data-[state=active]:bg-purple-600 rounded-lg flex items-center justify-center transition-colors">
-                  <Users className="w-4 h-4 text-purple-600 group-data-[state=active]:text-white" />
-                </div>
-                <span className="group-data-[state=active]:text-purple-600">Add Employee</span>
-              </TabsTrigger>
-              
-              <TabsTrigger 
-                value="time" 
-                className="group flex flex-col items-center gap-2 py-3 px-4 text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:border-blue-200 rounded-xl transition-all duration-300 hover:bg-white/50"
-              >
-                <div className="w-8 h-8 bg-orange-100 group-data-[state=active]:bg-orange-600 rounded-lg flex items-center justify-center transition-colors">
-                  <Clock className="w-4 h-4 text-orange-600 group-data-[state=active]:text-white" />
-                </div>
-                <span className="group-data-[state=active]:text-orange-600">Monitor Time</span>
-              </TabsTrigger>
-            </TabsList>
-
-            {/* Enhanced Tab Content */}
-            <TabsContent value="directory" className="space-y-6 mt-8">
-              <div className="bg-white rounded-2xl p-6 border border-blue-100 shadow-lg">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                    <Users className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900">Staff Directory</h3>
-                    <p className="text-sm text-slate-600">View and manage all registered staff members</p>
-                  </div>
-                </div>
-                <AdminTeacherDirectory />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="add-teacher" className="space-y-6 mt-8">
-              <div className="bg-white rounded-2xl p-6 border border-green-100 shadow-lg">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                    <Users className="w-5 h-5 text-green-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900">Add New Teacher</h3>
-                    <p className="text-sm text-slate-600">Register a new teacher in the system</p>
-                  </div>
-                </div>
-                <AdminTeacherForm />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="add-employee" className="space-y-6 mt-8">
-              <div className="bg-white rounded-2xl p-6 border border-purple-100 shadow-lg">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                    <Users className="w-5 h-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900">Add New Employee</h3>
-                    <p className="text-sm text-slate-600">Register a new employee in the system</p>
-                  </div>
-                </div>
-                <AdminEmployeeForm />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="time" className="space-y-6 mt-8">
-              <div className="bg-white rounded-2xl p-6 border border-orange-100 shadow-lg">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
-                    <Clock className="w-5 h-5 text-orange-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900">Time Monitoring</h3>
-                    <p className="text-sm text-slate-600">Track attendance and working hours</p>
-                  </div>
-                </div>
-                <AdminTeachersList />
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

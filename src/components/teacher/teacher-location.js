@@ -17,6 +17,7 @@ export default function TeacherLocation() {
   const [message, setMessage] = useState('');
   const [location, setLocation] = useState('');
   const [reason, setReason] = useState('');
+  const [duration, setDuration] = useState('30');
   const [recentLocations, setRecentLocations] = useState([]);
 
   useEffect(() => {
@@ -66,16 +67,27 @@ export default function TeacherLocation() {
       return;
     }
 
+    if (user.role !== 'teacher') {
+      setError('Unauthorized: Only teachers can update teacher locations.');
+      return;
+    }
+
     setSaving(true);
     try {
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + parseInt(duration) * 60000);
+
       const docRef = await addDoc(collection(firebaseDb, 'teacherLocations'), {
         teacherId: user.schoolId,
         teacherName: user.name || null,
         location: location.trim(),
         reason: reason.trim() || null,
+        durationMinutes: parseInt(duration),
+        expiresAt: expiresAt.toISOString(),
         createdAt: serverTimestamp(),
         createdById: user.schoolId,
         createdByName: user.name || 'Teacher',
+        role: 'teacher',
       });
 
       const newItem = {
@@ -84,9 +96,12 @@ export default function TeacherLocation() {
         teacherName: user.name || null,
         location: location.trim(),
         reason: reason.trim() || null,
+        durationMinutes: parseInt(duration),
+        expiresAt: expiresAt.toISOString(),
         createdAt: { seconds: Date.now() / 1000 },
         createdById: user.schoolId,
         createdByName: user.name || 'Teacher',
+        role: 'teacher',
       };
 
       setRecentLocations((prev) => [newItem, ...prev].slice(0, 5));
@@ -104,6 +119,10 @@ export default function TeacherLocation() {
   };
 
   const handleDelete = async (id) => {
+    if (user.role !== 'teacher') {
+      setError('Unauthorized: Only teachers can delete teacher locations.');
+      return;
+    }
     if (!window.confirm('Delete this location entry? This cannot be undone.')) return;
     
     setDeletingId(id);
@@ -162,6 +181,24 @@ export default function TeacherLocation() {
                 rows={3}
                 placeholder="e.g. Meeting with students, Office hours, Class observation"
               />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-slate-700">
+                Estimated Duration
+              </label>
+              <select
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+              >
+                <option value="15">15 Minutes</option>
+                <option value="30">30 Minutes</option>
+                <option value="60">1 Hour</option>
+                <option value="120">2 Hours</option>
+                <option value="240">4 Hours</option>
+                <option value="480">8 Hours</option>
+              </select>
             </div>
 
             <Button

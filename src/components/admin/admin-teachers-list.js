@@ -251,7 +251,8 @@ export default function AdminTeachersList() {
               </h3>
             </div>
             
-            <div className="overflow-x-auto">
+            {/* Desktop Table View */}
+            <div className="hidden lg:block overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-slate-50 border-b border-slate-200">
                   <tr>
@@ -347,23 +348,107 @@ export default function AdminTeachersList() {
                           <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                             t.status === 'Present' 
                               ? 'bg-green-100 text-green-800'
-                              : t.status === 'In campus'
-                              ? 'bg-blue-100 text-blue-800'
-                              : t.status === 'Incomplete'
+                              : t.status === 'Late'
                               ? 'bg-yellow-100 text-yellow-800'
+                              : t.status === 'Absent'
+                              ? 'bg-red-100 text-red-800'
                               : 'bg-slate-100 text-slate-800'
                           }`}>
-                            {t.status === 'Present' && <CheckCircle className="w-3 h-3 mr-1" />}
-                            {t.status === 'In campus' && <Clock className="w-3 h-3 mr-1" />}
-                            {t.status === 'Incomplete' && <AlertCircle className="w-3 h-3 mr-1" />}
-                            {t.status === 'No record today' && <XCircle className="w-3 h-3 mr-1" />}
-                            {t.status}
+                            {t.status || 'Unknown'}
                           </span>
                         </td>
                       </tr>
                     ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="lg:hidden p-4 space-y-4">
+              {rows
+                .filter((t) => {
+                  const matchesSearch = (() => {
+                    if (!search.trim()) return true;
+                    const term = search.toLowerCase();
+                    return (
+                      (t.name && t.name.toLowerCase().includes(term)) ||
+                      (t.schoolId && String(t.schoolId).toLowerCase().includes(term)) ||
+                      (t.role && t.role.toLowerCase().includes(term)) ||
+                      (t.employmentType && t.employmentType.toLowerCase().includes(term))
+                    );
+                  })();
+
+                  const role = (t.role || '').toLowerCase();
+                  const matchesRole =
+                    roleFilter === 'all' ? true : role === roleFilter.toLowerCase();
+
+                  return matchesSearch && matchesRole;
+                })
+                .map((t, index) => (
+                  <div key={t.id} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                    {/* Header with Name and Status */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
+                          <span className="text-sm font-medium text-slate-600">
+                            {t.name ? t.name.charAt(0).toUpperCase() : '?'}
+                          </span>
+                        </div>
+                        <div>
+                          <div className="font-semibold text-slate-900">{t.name}</div>
+                          <div className="text-xs text-slate-500 font-mono">ID: {t.schoolId}</div>
+                        </div>
+                      </div>
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        t.status === 'Present' 
+                          ? 'bg-green-100 text-green-800'
+                          : t.status === 'Late'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : t.status === 'Absent'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-slate-100 text-slate-800'
+                      }`}>
+                        {t.status || 'Unknown'}
+                      </span>
+                    </div>
+
+                    {/* Role and Employment Type */}
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <div>
+                        <div className="text-xs text-slate-500 mb-1">Role</div>
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {t.role}
+                        </span>
+                      </div>
+                      <div>
+                        <div className="text-xs text-slate-500 mb-1">Employment</div>
+                        <span className="text-sm text-slate-600">
+                          {t.employmentType && t.employmentType.trim().length > 0
+                            ? t.employmentType
+                            : '-'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Time In and Time Out */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-slate-50 rounded-lg p-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Clock className="w-3 h-3 text-slate-400" />
+                          <span className="text-xs text-slate-500">Time In</span>
+                        </div>
+                        <div className="text-sm font-mono text-slate-900">{t.timeIn}</div>
+                      </div>
+                      <div className="bg-slate-50 rounded-lg p-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Clock className="w-3 h-3 text-slate-400" />
+                          <span className="text-xs text-slate-500">Time Out</span>
+                        </div>
+                        <div className="text-sm font-mono text-slate-900">{t.timeOut}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
             </div>
           </div>
         </div>

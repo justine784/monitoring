@@ -4,7 +4,9 @@ import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookOpen, Users, BarChart3, Shield, Search, LogOut, GraduationCap, Award, Clock, MapPin, TrendingUp, ChevronRight, Menu, X, Briefcase } from 'lucide-react';
+import EmployeeLocator from '@/components/employee/employee-locator';
+import StaffLocator from '@/components/home/staff-locator';
+import { BookOpen, Users, BarChart3, Shield, Search, LogOut, GraduationCap, Award, Clock, MapPin, TrendingUp, ChevronRight, Menu, X, Briefcase, Navigation } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { firebaseDb } from '@/lib/firebase';
@@ -12,7 +14,12 @@ import { firebaseDb } from '@/lib/firebase';
 export default function Home() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [activeView, setActiveView] = useState('home');
@@ -154,13 +161,15 @@ export default function Home() {
                 {/* Search Bar */}
                 <div className="hidden md:flex items-center gap-2 bg-white rounded-lg border border-slate-200 px-3 py-2 shadow-sm">
                   <Search className="w-4 h-4 text-slate-400" />
-                  <input
-                    type="text"
-                    placeholder="Search teachers, employees..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="flex-1 outline-none text-sm bg-transparent"
-                  />
+                  {mounted && (
+                    <input
+                      type="text"
+                      placeholder="Search teachers, employees..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="flex-1 outline-none text-sm bg-transparent"
+                    />
+                  )}
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery('')}
@@ -172,11 +181,11 @@ export default function Home() {
                 </div>
                 
                 {/* User Menu */}
-                {user ? (
+                {mounted && (user ? (
                   <div className="flex items-center gap-3">
                     <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg border border-blue-100">
                       <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">{user.name.charAt(0)}</span>
+                        <span className="text-white text-xs font-bold">{user.name?.charAt(0)}</span>
                       </div>
                       <div className="text-xs">
                         <p className="font-semibold text-slate-900 truncate max-w-[100px]">{user.name}</p>
@@ -197,7 +206,7 @@ export default function Home() {
                   <Button onClick={() => router.push('/login')} className="bg-blue-600 hover:bg-blue-700">
                     Login
                   </Button>
-                )}
+                ))}
                 
                 {/* Mobile Menu Toggle */}
                 <button
@@ -277,6 +286,20 @@ export default function Home() {
                 </div>
               </button>
               
+              <button
+                onClick={() => {
+                  setActiveView('locator');
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-50 transition-colors text-left"
+              >
+                <MapPin className="w-5 h-5 text-red-600" />
+                <div>
+                  <p className="font-medium text-slate-900">Locate Staff</p>
+                  <p className="text-xs text-slate-500">Live directory</p>
+                </div>
+              </button>
+              
               {user && (
                 <button
                   onClick={() => logout()}
@@ -299,13 +322,15 @@ export default function Home() {
           <div className="md:hidden mb-6">
             <div className="flex items-center gap-2 bg-white rounded-lg border border-slate-200 px-3 py-2 shadow-sm">
               <Search className="w-4 h-4 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search teachers, employees..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 outline-none text-sm bg-transparent"
-              />
+              {mounted && (
+                <input
+                  type="text"
+                  placeholder="Search teachers, employees..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="flex-1 outline-none text-sm bg-transparent"
+                />
+              )}
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
@@ -631,141 +656,163 @@ export default function Home() {
             </section>
           )}
 
-          {/* Enhanced Employees List View */}
-          {activeView === 'employees' && (
-            <section>
-              <div className="mb-8">
-                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-6 border border-purple-100">
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    <div>
-                      <h2 className="text-3xl font-bold text-slate-900 mb-2 flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
-                          <Users className="w-6 h-6 text-white" />
-                        </div>
-                        Employees Directory
-                      </h2>
-                      <p className="text-slate-600">
-                        {employees.length} {employees.length === 1 ? 'employee' : 'employees'} registered in the system
-                      </p>
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setActiveView('home')}
-                      className="border-purple-200 text-purple-600 hover:bg-purple-50"
-                    >
-                      <ChevronRight className="w-4 h-4 mr-2 rotate-180" />
-                      Back to Home
-                    </Button>
+          {/* Enhanced Staff Locator View */}
+          {activeView === 'locator' && (
+            <section className="space-y-8">
+              <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl p-6 border border-red-100 shadow-sm">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                  <div>
+                    <h2 className="text-3xl font-bold text-slate-900 mb-2 flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                        <MapPin className="w-6 h-6 text-white" />
+                      </div>
+                      Staff Locator
+                    </h2>
+                    <p className="text-slate-600">
+                      Find teachers and employees across Mindoro State University campuses in real-time.
+                    </p>
                   </div>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setActiveView('home')}
+                    className="border-red-200 text-red-600 hover:bg-red-50"
+                  >
+                    <ChevronRight className="w-4 h-4 mr-2 rotate-180" />
+                    Back to Home
+                  </Button>
                 </div>
               </div>
 
-              {listLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="text-center">
-                    <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-slate-600">Loading employees...</p>
-                  </div>
-                </div>
-              ) : employees.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Users className="w-8 h-8 text-slate-400" />
-                  </div>
-                  <p className="text-slate-600">No employees found in the system.</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {employees.map((employee) => (
-                    <div key={employee.id} className="group bg-white rounded-2xl border border-purple-100 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
-                      {/* Card Header */}
-                      <div className="bg-gradient-to-r from-purple-500 to-indigo-600 p-4">
-                        <div className="flex items-center gap-3">
-                          <div className="relative">
-                            <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white/30 overflow-hidden flex-shrink-0">
-                              {employee.photoURL ? (
-                                <img
-                                  src={employee.photoURL}
-                                  alt={employee.name}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-white font-bold text-lg">
-                                  {employee.name ? employee.name.charAt(0).toUpperCase() : '?'}
-                                </div>
-                              )}
-                            </div>
-                            <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
-                              employee.role === 'employee' ? 'bg-blue-400' : 
-                              employee.role === 'student' ? 'bg-green-400' :
-                              employee.role === 'parent' ? 'bg-purple-400' : 'bg-orange-400'
-                            }`}></div>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-white font-semibold text-lg truncate">
-                              {employee.name || 'Unknown'}
-                            </h4>
-                            <p className="text-purple-100 text-sm capitalize">
-                              {employee.role || 'employee'}
-                            </p>
-                          </div>
-                        </div>
+              <StaffLocator />
+            </section>
+          )}
+
+          {/* Enhanced Employees List View */}
+          {activeView === 'employees' && (
+            <section className="space-y-8">
+              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-6 border border-purple-100 shadow-sm">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                  <div>
+                    <h2 className="text-3xl font-bold text-slate-900 mb-2 flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
+                        <Users className="w-6 h-6 text-white" />
                       </div>
+                      Employees Directory
+                    </h2>
+                    <p className="text-slate-600">
+                      {employees.length} {employees.length === 1 ? 'employee' : 'employees'} registered in the system
+                    </p>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setActiveView('home')}
+                    className="border-purple-200 text-purple-600 hover:bg-purple-50"
+                  >
+                    <ChevronRight className="w-4 h-4 mr-2 rotate-180" />
+                    Back to Home
+                  </Button>
+                </div>
+              </div>
 
-                      {/* Card Content */}
-                      <div className="p-4 space-y-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                            <Users className="w-4 h-4 text-purple-600" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-slate-900">{employee.name}</p>
-                            <p className="text-xs text-slate-600 font-mono">ID: {employee.schoolId}</p>
-                          </div>
-                        </div>
-                        
-                        {employee.position && (
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                              <Briefcase className="w-4 h-4 text-blue-600" />
-                            </div>
-                            <p className="text-sm text-slate-700">{employee.position}</p>
-                          </div>
-                        )}
-
-                        <div className="flex gap-2 pt-2">
-                          <button
-                            onClick={() => {
-                              if (user && user.role === 'admin') {
-                                router.push('/dashboard/admin');
-                              } else if (user && user.role === 'employee') {
-                                router.push('/dashboard/employee');
-                              } else {
-                                router.push('/login');
-                              }
-                            }}
-                            className="flex-1 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors"
-                          >
-                            View Profile
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (user) {
-                                goToDashboard('employee');
-                              } else {
-                                router.push('/login');
-                              }
-                            }}
-                            className="flex-1 px-3 py-2 border border-purple-200 text-purple-600 hover:bg-purple-50 text-sm font-medium rounded-lg transition-colors"
-                          >
-                            Dashboard
-                          </button>
-                        </div>
+              {/* Employee Location Map Section */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-1">
+                  <EmployeeLocator />
+                </div>
+                <div className="lg:col-span-2">
+                  {listLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="text-center">
+                        <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
+                        <p className="text-slate-600">Loading employees...</p>
                       </div>
                     </div>
-                  ))}
+                  ) : employees.length === 0 ? (
+                    <div className="text-center py-12 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                      <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Users className="w-8 h-8 text-slate-400" />
+                      </div>
+                      <p className="text-slate-600">No employees found in the system.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {employees.map((employee) => (
+                        <div key={employee.id} className="group bg-white rounded-2xl border border-purple-100 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
+                          {/* Card Header */}
+                          <div className="bg-gradient-to-r from-purple-500 to-indigo-600 p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="relative">
+                                <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white/30 overflow-hidden flex-shrink-0">
+                                  {employee.photoURL ? (
+                                    <img
+                                      src={employee.photoURL}
+                                      alt={employee.name}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-white font-bold text-lg">
+                                      {employee.name ? employee.name.charAt(0).toUpperCase() : '?'}
+                                    </div>
+                                  )}
+                                </div>
+                                <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white bg-purple-400`}></div>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="text-white font-semibold text-lg truncate">
+                                  {employee.name || 'Unknown'}
+                                </h4>
+                                <p className="text-purple-100 text-sm capitalize">
+                                  {employee.role || 'employee'}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Card Content */}
+                          <div className="p-4 space-y-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <Users className="w-4 h-4 text-purple-600" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-slate-900">{employee.name}</p>
+                                <p className="text-xs text-slate-600 font-mono">ID: {employee.schoolId}</p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex gap-2 pt-2">
+                              <button
+                                onClick={() => {
+                                  if (user && (user.role === 'admin' || user.role === 'employee')) {
+                                    router.push(user.role === 'admin' ? '/dashboard/admin' : '/dashboard/employee');
+                                  } else {
+                                    router.push('/login');
+                                  }
+                                }}
+                                className="flex-1 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors"
+                              >
+                                View Profile
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (user) {
+                                    goToDashboard('employee');
+                                  } else {
+                                    router.push('/login');
+                                  }
+                                }}
+                                className="flex-1 px-3 py-2 border border-purple-200 text-purple-600 hover:bg-purple-50 text-sm font-medium rounded-lg transition-colors"
+                              >
+                                Dashboard
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </section>
           )}
 
@@ -781,22 +828,35 @@ export default function Home() {
                     Track attendance, manage logbooks, and monitor academic progress for teachers, employees, students, and parents.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Button 
-                      size="lg" 
-                      onClick={() => router.push('/login')}
-                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-3 px-8 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
-                    >
-                      Get Started
-                      <ChevronRight className="w-5 h-5 ml-2" />
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      size="lg"
-                      onClick={() => setActiveView('teachers')}
-                      className="border-blue-200 text-blue-600 hover:bg-blue-50 font-medium py-3 px-8 rounded-lg transition-colors"
-                    >
-                      Browse Teachers
-                    </Button>
+                    {mounted && (
+                      <>
+                        <Button 
+                          size="lg" 
+                          onClick={() => router.push('/login')}
+                          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-3 px-8 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+                        >
+                          Get Started
+                          <ChevronRight className="w-5 h-5 ml-2" />
+                        </Button>
+                        <Button 
+                          variant="outline"
+                          size="lg"
+                          onClick={() => setActiveView('teachers')}
+                          className="border-blue-200 text-blue-600 hover:bg-blue-50 font-medium py-3 px-8 rounded-lg transition-colors"
+                        >
+                          Browse Teachers
+                        </Button>
+                        <Button 
+                          variant="outline"
+                          size="lg"
+                          onClick={() => setActiveView('locator')}
+                          className="border-red-200 text-red-600 hover:bg-red-50 font-medium py-3 px-8 rounded-lg transition-colors"
+                        >
+                          <MapPin className="w-5 h-5 mr-2" />
+                          Locate Staff
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
