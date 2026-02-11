@@ -8,29 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 export default function LoginPage() {
-  const { loginWithAutoDetect, loginAdmin } = useAuth();
+  const { loginAdmin } = useAuth();
   const router = useRouter();
 
-  const [schoolId, setSchoolId] = useState('');
   const [adminEmail, setAdminEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    try {
-      await loginWithAutoDetect({ schoolId });
-    } catch (err) {
-      setError(err.message || 'Login failed');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleAdminLogin = async (e) => {
     e.preventDefault();
@@ -65,7 +50,7 @@ export default function LoginPage() {
             </div>
             <h1 className="text-2xl font-bold mb-2">Mindoro State University</h1>
             <p className="text-blue-100 text-sm">
-              {showAdminLogin ? 'Admin Portal' : 'Employee/Teacher'}
+              Admin Portal
             </p>
           </div>
           
@@ -76,53 +61,7 @@ export default function LoginPage() {
               </div>
             )}
 
-            {!showAdminLogin ? (
-              <form onSubmit={handleLogin} className="space-y-5">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-700">
-                    School ID
-                  </label>
-                  <input
-                    type="text"
-                    value={schoolId}
-                    onChange={(e) => setSchoolId(e.target.value)}
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter your School ID"
-                    required
-                  />
-                </div>
-
-                <Button 
-                  type="submit" 
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors" 
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      Signing in...
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center gap-2">
-                      <Users className="w-4 h-4" />
-                      Sign In
-                    </span>
-                  )}
-                </Button>
-
-                <div className="text-center">
-                  <button
-                    type="button"
-                    onClick={() => setShowAdminLogin(true)}
-                    className="text-sm text-slate-600 hover:text-blue-600 font-medium transition-colors flex items-center gap-2 mx-auto"
-                  >
-                    <Shield className="w-4 h-4" />
-                    Admin Login
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <form onSubmit={handleAdminLogin} className="space-y-5">
+            <form onSubmit={handleAdminLogin} className="space-y-5">
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-slate-700">
                     Email Address
@@ -168,24 +107,8 @@ export default function LoginPage() {
                     </span>
                   )}
                 </Button>
-
-                <div className="text-center">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowAdminLogin(false);
-                      setAdminEmail('');
-                      setAdminPassword('');
-                    }}
-                    className="text-sm text-slate-600 hover:text-blue-600 font-medium transition-colors flex items-center gap-2 mx-auto"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    Back to User Login
-                  </button>
-                </div>
               </form>
-            )}
-          </CardContent>
+            </CardContent>
           
           {/* Footer */}
           <div className="px-6 pb-6">

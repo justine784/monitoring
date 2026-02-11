@@ -15,10 +15,19 @@ export default function Home() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
   }, []);
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -28,6 +37,9 @@ export default function Home() {
   const [listLoading, setListLoading] = useState(false);
   const [teacherSearchQuery, setTeacherSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showTimeModal, setShowTimeModal] = useState(false);
+  const [timeAction, setTimeAction] = useState(''); // 'time-in' or 'time-out'
+  const [employeeId, setEmployeeId] = useState('');
 
   useEffect(() => {
     const performSearch = async () => {
@@ -152,8 +164,7 @@ export default function Home() {
                   <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-slate-900">Mindoro State University</h1>
-                  <p className="text-sm text-slate-600">Monitoring System</p>
+                  <h1 className="text-xl font-bold text-slate-900">MINSU - MBC</h1>
                 </div>
               </div>
               
@@ -164,7 +175,7 @@ export default function Home() {
                   {mounted && (
                     <input
                       type="text"
-                      placeholder="Search teachers, employees..."
+                      placeholder="Search Facultys..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="flex-1 outline-none text-sm bg-transparent"
@@ -178,6 +189,15 @@ export default function Home() {
                       <X className="w-4 h-4" />
                     </button>
                   )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setActiveView('locator')}
+                    className="text-red-600 border-red-200 hover:bg-red-50"
+                  >
+                    <MapPin className="w-4 h-4" />
+                    <span className="hidden sm:inline">Locate Staff</span>
+                  </Button>
                 </div>
                 
                 {/* User Menu */}
@@ -816,103 +836,133 @@ export default function Home() {
             </section>
           )}
 
-          {/* Hero Section */}
+          {/* Enhanced Hero Section with Clock */}
           {activeView === 'home' && (
-            <section className="text-center py-12">
-              <div className="max-w-4xl mx-auto">
-                <div className="mb-8">
-                  <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
-                    Welcome to Mindoro State University Monitoring System
+            <section className="text-center py-16">
+              <div className="max-w-6xl mx-auto">
+                {/* Enhanced Welcome Message */}
+                <div className="mb-12">
+                  <h2 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent mb-6 leading-tight">
+                    Welcome to Mindoro State University Faculty Monitoring System
                   </h2>
-                  <p className="text-lg md:text-xl text-slate-600 mb-8 max-w-3xl mx-auto">
-                    Track attendance, manage logbooks, and monitor academic progress for teachers, employees, students, and parents.
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    {mounted && (
-                      <>
-                        <Button 
-                          size="lg" 
-                          onClick={() => router.push('/login')}
-                          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-3 px-8 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
-                        >
-                          Get Started
-                          <ChevronRight className="w-5 h-5 ml-2" />
-                        </Button>
-                        <Button 
-                          variant="outline"
-                          size="lg"
-                          onClick={() => setActiveView('teachers')}
-                          className="border-blue-200 text-blue-600 hover:bg-blue-50 font-medium py-3 px-8 rounded-lg transition-colors"
-                        >
-                          Browse Teachers
-                        </Button>
-                        <Button 
-                          variant="outline"
-                          size="lg"
-                          onClick={() => setActiveView('locator')}
-                          className="border-red-200 text-red-600 hover:bg-red-50 font-medium py-3 px-8 rounded-lg transition-colors"
-                        >
-                          <MapPin className="w-5 h-5 mr-2" />
-                          Locate Staff
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Stats Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white/50 shadow-lg hover:shadow-xl transition-all duration-300">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <BarChart3 className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <TrendingUp className="w-4 h-4 text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-slate-900">Attendance Tracking</h3>
-                  <p className="text-sm text-slate-600 mt-2">
-                    Real-time monitoring with detailed analytics and comprehensive records.
-                  </p>
                 </div>
 
-                <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white/50 shadow-lg hover:shadow-xl transition-all duration-300">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                      <BookOpen className="w-6 h-6 text-green-600" />
+                {/* Clock and Date Display */}
+                <div className="mb-12">
+                  <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 max-w-2xl mx-auto">
+                    <div className="text-center space-y-4">
+                      {/* Date Display */}
+                      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-2xl px-6 py-3 inline-block">
+                        <p className="text-lg font-semibold">
+                          {mounted && currentTime.toLocaleDateString('en-US', { 
+                            weekday: 'long', 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                          })}
+                        </p>
+                      </div>
+                      
+                      {/* Clock Display */}
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-2xl blur-xl opacity-30 animate-pulse"></div>
+                        <div className="relative bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-2xl px-12 py-8 shadow-2xl">
+                          <div className="flex items-center justify-center gap-4">
+                            <Clock className="w-8 h-8 text-blue-400 animate-pulse" />
+                            <div className="text-6xl md:text-7xl font-bold font-mono tracking-wider">
+                              {mounted && currentTime.toLocaleTimeString('en-US', { 
+                                hour: '2-digit', 
+                                minute: '2-digit',
+                                second: '2-digit',
+                                hour12: true 
+                              })}
+                            </div>
+                            <Clock className="w-8 h-8 text-indigo-400 animate-pulse" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Additional Time Info */}
+                      <div className="flex justify-center gap-6 text-sm text-slate-600">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                          <span>Live Time</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span>Timezone: {mounted && Intl.DateTimeFormat().resolvedOptions().timeZone}</span>
+                        </div>
+                      </div>
                     </div>
-                    <TrendingUp className="w-4 h-4 text-green-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
-                  <h3 className="text-lg font-semibold text-slate-900">Logbook Management</h3>
-                  <p className="text-sm text-slate-600 mt-2">
-                    Digital records for achievements, behavior, and performance tracking.
-                  </p>
                 </div>
 
-                <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white/50 shadow-lg hover:shadow-xl transition-all duration-300">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <Users className="w-6 h-6 text-purple-600" />
+                {/* Employee ID Input Section */}
+                <div className="mb-12">
+                  <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 max-w-2xl mx-auto">
+                    <div className="text-center">
+                      <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center justify-center gap-2">
+                        <Users className="w-6 h-6 text-blue-600" />
+                        Employee ID Entry
+                      </h3>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2">
+                            Employee ID
+                          </label>
+                          <input
+                            type="text"
+                            value={employeeId}
+                            onChange={(e) => setEmployeeId(e.target.value)}
+                            placeholder="Enter your Employee ID"
+                            className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2">
+                            Note: Location (teacher or employee)
+                          </label>
+                          <textarea
+                            value=""
+                            onChange={(e) => {
+                              // Handle location note change
+                              console.log('Location note:', e.target.value);
+                            }}
+                            placeholder="Specify location: teacher or employee"
+                            className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white resize-none"
+                            rows="2"
+                          />
+                        </div>
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => {
+                              if (employeeId.trim()) {
+                                setTimeAction('time-in');
+                                setShowTimeModal(true);
+                              } else {
+                                alert('Please enter your Employee ID');
+                              }
+                            }}
+                            className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                          >
+                            Time In
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (employeeId.trim()) {
+                                setTimeAction('time-out');
+                                setShowTimeModal(true);
+                              } else {
+                                alert('Please enter your Employee ID');
+                              }
+                            }}
+                            className="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                          >
+                            Time Out
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    <TrendingUp className="w-4 h-4 text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
-                  <h3 className="text-lg font-semibold text-slate-900">Multi-role Views</h3>
-                  <p className="text-sm text-slate-600 mt-2">
-                    Dedicated dashboards for teachers, employees, students, and parents.
-                  </p>
-                </div>
-
-                <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white/50 shadow-lg hover:shadow-xl transition-all duration-300">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                      <Shield className="w-6 h-6 text-red-600" />
-                    </div>
-                    <TrendingUp className="w-4 h-4 text-red-600 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-slate-900">Secure Access</h3>
-                  <p className="text-sm text-slate-600 mt-2">
-                    Role-based authentication with School ID and Firebase security.
-                  </p>
                 </div>
               </div>
             </section>
@@ -921,12 +971,87 @@ export default function Home() {
           {/* Global Footer */}
           <footer className="border-t bg-white rounded-2xl shadow-sm mt-auto">
             <div className="px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-2">
-              <p className="text-sm text-slate-600">© 2026 Mindoro State University. All rights reserved.</p>
+              <p className="text-sm text-slate-600"> 2026 Mindoro State University. All rights reserved.</p>
               <p className="text-sm text-slate-600">Demo System • No Real Data</p>
             </div>
           </footer>
         </main>
       </div>
+
+      {/* Employee ID Modal */}
+      {showTimeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowTimeModal(false)}></div>
+          <div className="relative bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+            <button
+              onClick={() => setShowTimeModal(false)}
+              className="absolute top-4 right-4 p-2 rounded-lg hover:bg-slate-100 transition-colors"
+            >
+              <X className="w-5 h-5 text-slate-500" />
+            </button>
+            
+            <div className="text-center mb-6">
+              <div className={`w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center ${
+                timeAction === 'time-in' 
+                  ? 'bg-gradient-to-r from-green-500 to-green-600' 
+                  : 'bg-gradient-to-r from-red-500 to-red-600'
+              }`}>
+                <Clock className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">
+                {timeAction === 'time-in' ? 'Time In' : 'Time Out'}
+              </h3>
+              <p className="text-slate-600">
+                Enter your Employee ID to {timeAction === 'time-in' ? 'clock in' : 'clock out'}
+              </p>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Employee ID
+                </label>
+                <input
+                  type="text"
+                  value={employeeId}
+                  onChange={(e) => setEmployeeId(e.target.value)}
+                  placeholder="Enter your Employee ID"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  autoFocus
+                />
+              </div>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowTimeModal(false)}
+                  className="flex-1 px-4 py-3 border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    if (employeeId.trim()) {
+                      // Handle time in/out logic here
+                      alert(`${timeAction === 'time-in' ? 'Time In' : 'Time Out'} recorded for Employee ID: ${employeeId}`);
+                      setShowTimeModal(false);
+                      setEmployeeId('');
+                    } else {
+                      alert('Please enter your Employee ID');
+                    }
+                  }}
+                  className={`flex-1 px-4 py-3 text-white rounded-xl font-medium transition-colors ${
+                    timeAction === 'time-in'
+                      ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
+                      : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700'
+                  }`}
+                >
+                  {timeAction === 'time-in' ? 'Time In' : 'Time Out'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

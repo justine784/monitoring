@@ -12,7 +12,8 @@ import AdminTeachersList from '@/components/admin/admin-teachers-list';
 import AdminTimeRecords from '@/components/admin/admin-time-records';
 import AdminIncidentList from '@/components/admin/admin-incident-list';
 import AdminUserManagement from '@/components/admin/admin-user-management';
-import { LogOut, Settings, Users, UserCheck, Clock, TrendingUp, AlertTriangle, Menu, X, GraduationCap, Calendar, BarChart3, Shield } from 'lucide-react';
+import StaffLocator from '@/components/home/staff-locator';
+import { LogOut, Settings, Users, UserCheck, Clock, TrendingUp, AlertTriangle, Menu, X, GraduationCap, Calendar, BarChart3, Shield, MapPin } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { firebaseDb } from '@/lib/firebase';
@@ -246,6 +247,13 @@ export default function AdminDashboard() {
                 <span className="font-semibold text-sm">Time Records</span>
               </button>
               <button
+                onClick={() => setActiveSection('locator')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeSection === 'locator' ? 'bg-red-600 text-white shadow-lg shadow-red-200' : 'text-slate-600 hover:bg-slate-50'}`}
+              >
+                <MapPin className="w-5 h-5" />
+                <span className="font-semibold text-sm">Staff Locator</span>
+              </button>
+              <button
                 onClick={() => setActiveSection('incidents')}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeSection === 'incidents' ? 'bg-red-600 text-white shadow-lg shadow-red-200' : 'text-slate-600 hover:bg-slate-50'}`}
               >
@@ -315,6 +323,7 @@ export default function AdminDashboard() {
               {activeSection === 'add-employee' && <AdminEmployeeForm />}
               {activeSection === 'time' && <AdminTeachersList />}
               {activeSection === 'time-records' && <AdminTimeRecords />}
+              {activeSection === 'locator' && <StaffLocator />}
               {activeSection === 'incidents' && <AdminIncidentList />}
             </div>
           </div>
